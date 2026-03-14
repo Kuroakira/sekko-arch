@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Command, Option } from "commander";
 import { runScan } from "./scan.js";
 import { runCheck } from "./check.js";
@@ -9,7 +11,7 @@ export function createProgram(): Command {
   const program = new Command();
 
   program
-    .name("archana")
+    .name("sekko-arch")
     .version("0.1.0")
     .description("Architecture analysis CLI")
     .addOption(
@@ -47,10 +49,15 @@ export function createProgram(): Command {
   return program;
 }
 
-const isDirectRun =
-  process.argv[1] &&
-  (process.argv[1].endsWith("/cli/index.js") ||
-    process.argv[1].endsWith("/cli/index.ts"));
+const isDirectRun = (() => {
+  try {
+    const self = fileURLToPath(import.meta.url);
+    const arg = realpathSync(process.argv[1]);
+    return arg === self;
+  } catch {
+    return false;
+  }
+})();
 
 if (isDirectRun) {
   const program = createProgram();

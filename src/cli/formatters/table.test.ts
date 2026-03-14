@@ -5,7 +5,7 @@ import { makeDimension, makeHealth } from "../../testing/fixtures.js";
 describe("formatTable", () => {
   it("includes the report header", () => {
     const output = formatTable(makeHealth());
-    expect(output).toContain("archana");
+    expect(output).toContain("sekko-arch");
     expect(output).toContain("Architecture Health Report");
   });
 

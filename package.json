@@ -1,12 +1,29 @@
 {
-  "name": "archana",
+  "name": "sekko-arch",
   "version": "0.1.0",
+  "description": "Architecture analysis CLI for TypeScript projects",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": {
-    "archana": "dist/cli/index.js"
+    "sekko-arch": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
     "build": "tsup",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",

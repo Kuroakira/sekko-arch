@@ -90,7 +90,7 @@ describe("runScan", () => {
     expect(logSpy).toHaveBeenCalledOnce();
     const output = logSpy.mock.calls[0]?.[0];
     expect(typeof output).toBe("string");
-    expect(output).toContain("archana");
+    expect(output).toContain("sekko-arch");
     expect(output).toContain("Dimension");
   });
 

@@ -1,4 +1,4 @@
-# archana
+# sekko-arch
 
 TypeScriptプロジェクトのアーキテクチャ品質を静的解析し、A〜Fでスコアリングするコマンドラインツール。
 
@@ -7,9 +7,13 @@ AIエージェント主導の開発で失われがちな「プロジェクト全
 ## インストール
 
 ```bash
-npm install
-npm run build
-npm link  # archana コマンドをグローバルに使用可能にする
+npm install -g sekko-arch
+```
+
+または npx で直接実行:
+
+```bash
+npx sekko-arch scan .
 ```
 
 ## 使い方
@@ -19,8 +23,8 @@ npm link  # archana コマンドをグローバルに使用可能にする
 プロジェクトをスキャンし、7つのアーキテクチャ指標をA〜Fで採点する。
 
 ```bash
-archana scan .
-archana scan . --format json   # 機械可読なJSON出力
+sekko-arch scan .
+sekko-arch scan . --format json   # 機械可読なJSON出力
 ```
 
 ### check — ルールチェック
@@ -28,7 +32,7 @@ archana scan . --format json   # 機械可読なJSON出力
 `.archana/rules.toml` に定義した制約に違反がないかチェックする。違反があれば exit code 1 で終了するため、CIに組み込める。
 
 ```bash
-archana check .
+sekko-arch check .
 ```
 
 ### gate — 回帰検出
@@ -37,12 +41,12 @@ archana check .
 
 ```bash
 # 1. 変更前にベースラインを保存
-archana gate --save .
+sekko-arch gate --save .
 
 # 2. コードを変更（AIによる生成など）
 
 # 3. ベースラインと比較
-archana gate .
+sekko-arch gate .
 # → スコアが悪化していれば非ゼロで終了し、劣化した次元と対象ファイルを表示
 ```
 
@@ -91,9 +95,17 @@ deny = [
 - **テスト**: Vitest
 - **ビルド**: tsup
 
+## 動作環境
+
+- Node.js >= 18
+
 ## 開発
 
 ```bash
+git clone https://github.com/your-username/sekko-arch.git
+cd sekko-arch
+npm install
+npm run build
 npm test          # テスト実行
 npm run typecheck # 型チェック
 npm run lint      # ESLint

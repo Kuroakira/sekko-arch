@@ -8,9 +8,9 @@ describe("createProgram", () => {
     expect(program).toBeInstanceOf(Command);
   });
 
-  it("has program name 'archana'", () => {
+  it("has program name 'sekko-arch'", () => {
     const program = createProgram();
-    expect(program.name()).toBe("archana");
+    expect(program.name()).toBe("sekko-arch");
   });
 
   it("has version 0.1.0", () => {
@@ -23,7 +23,7 @@ describe("createProgram", () => {
     program.exitOverride();
     program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
 
-    await program.parseAsync(["node", "archana", "scan"]);
+    await program.parseAsync(["node", "sekko-arch", "scan"]);
 
     const opts = program.opts<{ format: string }>();
     expect(opts.format).toBe("table");
@@ -34,7 +34,7 @@ describe("createProgram", () => {
     program.exitOverride();
     program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
 
-    await program.parseAsync(["node", "archana", "--format", "json", "scan"]);
+    await program.parseAsync(["node", "sekko-arch", "--format", "json", "scan"]);
 
     const opts = program.opts<{ format: string }>();
     expect(opts.format).toBe("json");
@@ -46,7 +46,7 @@ describe("createProgram", () => {
     program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
 
     await expect(
-      program.parseAsync(["node", "archana", "--format", "xml", "scan"]),
+      program.parseAsync(["node", "sekko-arch", "--format", "xml", "scan"]),
     ).rejects.toThrow();
   });
 });
@@ -89,7 +89,7 @@ describe("subcommands", () => {
       receivedPath = path;
     });
 
-    await program.parseAsync(["node", "archana", "scan"]);
+    await program.parseAsync(["node", "sekko-arch", "scan"]);
 
     expect(receivedPath).toBe(".");
   });
@@ -105,7 +105,7 @@ describe("subcommands", () => {
       receivedPath = path;
     });
 
-    await program.parseAsync(["node", "archana", "scan", "/tmp/foo"]);
+    await program.parseAsync(["node", "sekko-arch", "scan", "/tmp/foo"]);
 
     expect(receivedPath).toBe("/tmp/foo");
   });
@@ -121,7 +121,7 @@ describe("subcommands", () => {
       receivedPath = path;
     });
 
-    await program.parseAsync(["node", "archana", "check"]);
+    await program.parseAsync(["node", "sekko-arch", "check"]);
 
     expect(receivedPath).toBe(".");
   });
@@ -137,7 +137,7 @@ describe("subcommands", () => {
       receivedPath = path;
     });
 
-    await program.parseAsync(["node", "archana", "gate"]);
+    await program.parseAsync(["node", "sekko-arch", "gate"]);
 
     expect(receivedPath).toBe(".");
   });
@@ -154,7 +154,7 @@ describe("subcommands", () => {
     program.exitOverride();
     program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
 
-    await program.parseAsync(["node", "archana", "gate"]);
+    await program.parseAsync(["node", "sekko-arch", "gate"]);
 
     const gate = findCommand(program, "gate");
     expect(gate.opts<{ save: boolean }>().save).toBe(false);
@@ -165,7 +165,7 @@ describe("subcommands", () => {
     program.exitOverride();
     program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
 
-    await program.parseAsync(["node", "archana", "gate", "--save"]);
+    await program.parseAsync(["node", "sekko-arch", "gate", "--save"]);
 
     const gate = findCommand(program, "gate");
     expect(gate.opts<{ save: boolean }>().save).toBe(true);

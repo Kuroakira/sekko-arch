@@ -33,7 +33,7 @@ export function formatTable(report: HealthReport): string {
   const lines: string[] = [];
 
   lines.push("");
-  lines.push(`${indent}archana \u2014 Architecture Health Report`);
+  lines.push(`${indent}sekko-arch \u2014 Architecture Health Report`);
   lines.push("");
 
   lines.push(

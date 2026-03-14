@@ -18,11 +18,11 @@ const stubReport: HealthReport = {
 };
 
 describe("getFormatter", () => {
-  it("returns a formatter for 'table' that produces a string containing 'archana'", () => {
+  it("returns a formatter for 'table' that produces a string containing 'sekko-arch'", () => {
     const formatter = getFormatter("table");
     const output = formatter.format(stubReport);
 
-    expect(output).toContain("archana");
+    expect(output).toContain("sekko-arch");
     expect(output).toContain("Dimension");
   });
 
