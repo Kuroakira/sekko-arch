@@ -4,11 +4,52 @@
 
 archana M1 delivers a TypeScript CLI tool that analyzes architecture quality of TypeScript codebases. It builds a dependency graph using tree-sitter parsing and oxc-resolver import resolution, computes 7 metrics across 3 categories, grades each A-F, and provides scan/check/gate commands for CI integration. Target: 5,000 files in 15 seconds on 4 cores.
 
-The implementation follows the 6-phase pipeline (File Collection -> Line Counting -> Parsing -> Graph Construction -> Metrics -> Output) with 28 tasks organized in 10 phases. Tasks are ordered by dependency: foundation types first, then each pipeline phase, then CLI on top.
+The implementation follows the 6-phase pipeline (File Collection -> Line Counting -> Parsing -> Graph Construction -> Metrics -> Output) with 38 tasks organized into 8 implementation groups. Groups are ordered by dependency: foundation first, then each pipeline phase, then CLI on top.
+
+---
+
+## Implementation Groups
+
+| Group | Name | Tasks | Description |
+|-------|------|-------|-------------|
+| A | Foundation (done) | 1-2 | Project init, dependencies |
+| B | Type System (done) | 3-5 | Core, snapshot, metrics, rules types |
+| C | Scanner Pipeline | 6-10 | Utils, file collection, line counting |
+| D | Parser Pipeline | 11-15 | tree-sitter setup, extraction, complexity |
+| E | Graph & Metrics | 16-25 | Import resolution, graph, all 7 metrics |
+| F | Grading & Output | 26-31 | Grading, CLI commands, formatters |
+| G | Rules Engine | 32-37 | TOML parsing, constraints, check/gate commands |
+| H | Polish & Validation | 38-40 | E2E tests, perf benchmark, error handling |
+
+### Dependency Flow
+
+```
+A (done) → B (done) → C → D → E → F → G → H
+                              ↘ F (grading is independent of rules)
+```
+
+---
+
+## Implementation Rules
+
+### TDD徹底
+
+全タスクでRED-GREEN-REFACTORサイクルを厳守する。
+
+1. **RED**: テストを先に書く。実装コードより前にテストファイルを作成し、失敗することを確認する
+2. **GREEN**: テストが通る最小限の実装を書く
+3. **REFACTOR**: テストが通った状態でリファクタリングする
+
+- テストファイルは実装ファイルと同じディレクトリに `*.test.ts` として配置する
+- 各タスク完了時に `npm run typecheck && npm test && npm run build` を全て通すこと
+- テストを後回しにしない。テストなしの実装コードをコミットしない
+- エッジケース（空入力、不正データ、境界値）を必ずテストに含める
 
 ---
 
 ## Task List
+
+### Group A: Foundation (done)
 
 ### Task 1: Project Initialization
 
@@ -26,7 +67,9 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: All packages install without errors, `import` statements resolve
 - **Acceptance criteria**: `npm install` succeeds, native bindings compile
 
-### Task 3: Core Types - FileNode and StructuralAnalysis
+### Group B: Type System (done)
+
+### [DONE] Task 3: Core Types - FileNode and StructuralAnalysis (completed 2026-03-14T09:55)
 
 - **Description**: Define the core data types: `FileNode` (path, name, isDir, lines, logic, comments, blanks, funcs, lang, sa, children), `StructuralAnalysis` (functions, classes, imports), `FuncInfo` (name, startLine, endLine, lineCount, cc, paramCount), `ClassInfo` (name, methods, bases, kind), `ImportInfo` (specifier, resolved).
 - **Files**: `src/types/core.ts`
@@ -34,7 +77,7 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: Type compilation check, sample object construction
 - **Acceptance criteria**: All types are readonly/immutable where appropriate, match the design doc data model
 
-### Task 4: Snapshot and Graph Types
+### [DONE] Task 4: Snapshot and Graph Types (completed 2026-03-14T09:56)
 
 - **Description**: Define `Snapshot` (root FileNode, totalFiles, totalLines, importGraph), `ImportEdge` (fromFile, toFile), `ImportGraph` (edges array + adjacency helpers).
 - **Files**: `src/types/snapshot.ts`
@@ -42,13 +85,15 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: Snapshot construction from sample data
 - **Acceptance criteria**: Snapshot is immutable after construction
 
-### Task 5: Metrics and Report Types
+### [DONE] Task 5: Metrics and Report Types (completed 2026-03-14T09:57)
 
 - **Description**: Define `HealthReport`, `DimensionGrades` (7 dimensions: cycles, coupling, depth, godFiles, complexFn, levelization, blastRadius), `FileMetric`, `FuncMetric`, `RuleCheckResult`, `RuleViolation`, `Severity`.
 - **Files**: `src/types/metrics.ts`, `src/types/rules.ts`
 - **Dependencies**: Task 3
 - **Tests**: Type compilation check
 - **Acceptance criteria**: All report types match design doc specification
+
+### Group C: Scanner Pipeline
 
 ### Task 6: Utility - module_of and Glob Matching
 
@@ -90,6 +135,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: Integration test scanning a small test fixture directory
 - **Acceptance criteria**: Returns complete FileNode array with all line count fields populated
 
+### Group D: Parser Pipeline
+
 ### Task 11: Parser - tree-sitter Setup
 
 - **Description**: Initialize tree-sitter with TypeScript grammar. Create a reusable parser instance. Implement `parseFile(source: string): Tree` wrapper that handles parse failures (returns null + warning).
@@ -129,6 +176,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Dependencies**: Tasks 11, 12, 13, 14, 3
 - **Tests**: Integration test parsing a small TS file, verify all SA fields populated
 - **Acceptance criteria**: FileNode.sa correctly populated, parse failures produce warning + undefined sa (file still in results)
+
+### Group E: Graph & Metrics
 
 ### Task 16: Graph - Import Resolution with oxc-resolver
 
@@ -210,6 +259,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: Unit tests: isolated file (0), linear chain (depth-1 has max), star topology (center has max)
 - **Acceptance criteria**: Blast radius matches sentrux's reverse BFS, foundation exclusion for grading
 
+### Group F: Grading & Output
+
 ### Task 26: Metrics - Orchestrator
 
 - **Description**: Wire all metrics into `computeHealth(snapshot): HealthReport`. Call each metric computation, aggregate results into HealthReport.
@@ -258,6 +309,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Tests**: Unit test: output is valid JSON, contains all expected fields
 - **Acceptance criteria**: Valid JSON output parseable by standard tools
 
+### Group G: Rules Engine
+
 ### Task 32: Rules Engine - TOML Parser
 
 - **Description**: Parse `.archana/rules.toml` into `RulesConfig`. Define TOML schema: `[constraints]` (max_cycles, max_coupling, max_cc, etc.), `[[layers]]` (name, paths, order), `[[boundaries]]` (from, to, reason).
@@ -305,6 +358,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 - **Dependencies**: Tasks 29, 5
 - **Tests**: Integration test: save baseline, degrade a metric, gate detects it
 - **Acceptance criteria**: Baseline save/load works, degradation correctly detected, exit codes correct
+
+### Group H: Polish & Validation
 
 ### Task 38: End-to-End Integration Test
 
