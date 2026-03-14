@@ -5,10 +5,7 @@ import { computeModuleAssignments } from "./module-boundary.js";
 import { detectEntryPoints } from "./complex-fns.js";
 import { detectCycles } from "./cycles.js";
 import type { CycleResult } from "./cycles.js";
-import {
-  STABILITY_INSTABILITY_THRESHOLD,
-  STABILITY_FAN_IN_THRESHOLD,
-} from "../constants.js";
+import { isStable } from "./stability.js";
 
 const BARREL_FILE_PATTERN = /\/index\.tsx?$/;
 
@@ -18,16 +15,7 @@ function isFoundationFile(
   fanOut: ReadonlyMap<string, number>,
 ): boolean {
   if (BARREL_FILE_PATTERN.test(file)) return true;
-
-  const fi = fanIn.get(file) ?? 0;
-  if (fi < STABILITY_FAN_IN_THRESHOLD) return false;
-
-  const fo = fanOut.get(file) ?? 0;
-  const total = fi + fo;
-  if (total === 0) return true;
-
-  const instability = fo / total;
-  return instability <= STABILITY_INSTABILITY_THRESHOLD;
+  return isStable(file, fanIn, fanOut);
 }
 
 function buildFoundationFiles(

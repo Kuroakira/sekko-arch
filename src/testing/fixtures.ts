@@ -142,6 +142,16 @@ export function makeFuncInfo(
   };
 }
 
+export function makeImportEdge(
+  overrides?: Partial<ImportEdge>,
+): ImportEdge {
+  return {
+    fromFile: "src/module-a/file1.ts",
+    toFile: "src/module-b/file2.ts",
+    ...overrides,
+  };
+}
+
 export function makeSnapshot(
   files: readonly FileNode[],
   edges: readonly ImportEdge[],

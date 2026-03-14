@@ -1,4 +1,4 @@
 node_modules
 dist
 coverage
-.archana/baseline.json
+.sekko-arch/baseline.json

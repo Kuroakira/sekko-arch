@@ -6,13 +6,13 @@ import { parseRulesFile } from "./toml-parser.js";
 import type { RulesConfig } from "../types/rules.js";
 
 function makeTempDir(): string {
-  return mkdtempSync(join(tmpdir(), "archana-toml-test-"));
+  return mkdtempSync(join(tmpdir(), "sekko-toml-test-"));
 }
 
 function writeRulesToml(configDir: string, content: string): void {
-  const archanaDir = join(configDir, ".archana");
-  mkdirSync(archanaDir, { recursive: true });
-  writeFileSync(join(archanaDir, "rules.toml"), content, "utf-8");
+  const sekkoDir = join(configDir, ".sekko-arch");
+  mkdirSync(sekkoDir, { recursive: true });
+  writeFileSync(join(sekkoDir, "rules.toml"), content, "utf-8");
 }
 
 describe("parseRulesFile", () => {

@@ -56,7 +56,7 @@ function toBoundaryConfig(item: unknown): BoundaryConfig | null {
 }
 
 export function parseRulesFile(configDir: string): RulesConfig | null {
-  const filePath = join(configDir, ".archana", "rules.toml");
+  const filePath = join(configDir, ".sekko-arch", "rules.toml");
 
   if (!existsSync(filePath)) {
     return null;

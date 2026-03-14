@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { executePipeline } from "./scan.js";
 
 function createFixtureDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), "archana-scan-test-"));
+  const dir = mkdtempSync(join(tmpdir(), "sekko-scan-test-"));
 
   writeFileSync(
     join(dir, "a.ts"),

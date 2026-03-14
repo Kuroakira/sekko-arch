@@ -8,7 +8,7 @@ describe("scanFiles", () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "archana-scan-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sekko-scan-"));
   });
 
   afterEach(() => {

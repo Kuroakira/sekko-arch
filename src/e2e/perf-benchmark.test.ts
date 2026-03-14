@@ -93,7 +93,7 @@ describe("Performance: scan benchmark", () => {
   let fixtureDir: string;
 
   beforeAll(() => {
-    fixtureDir = mkdtempSync(join(tmpdir(), "archana-perf-"));
+    fixtureDir = mkdtempSync(join(tmpdir(), "sekko-perf-"));
     generateFixture(fixtureDir);
   }, 60000);
 

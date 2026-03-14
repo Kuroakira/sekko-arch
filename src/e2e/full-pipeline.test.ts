@@ -85,7 +85,7 @@ function scanJson(): ScanJson {
 describe("E2E: full pipeline", () => {
   beforeAll(() => {
     // Copy fixture to temp dir outside git repo so fsWalkFiles is used
-    testDir = mkdtempSync(join(tmpdir(), "archana-e2e-"));
+    testDir = mkdtempSync(join(tmpdir(), "sekko-e2e-"));
     cpSync(FIXTURE_SRC, testDir, { recursive: true });
   });
 
@@ -172,7 +172,7 @@ describe("E2E: full pipeline", () => {
       expect(exitCode).toBe(0);
       expect(stdout).toContain("Baseline saved");
 
-      const baselinePath = join(testDir, ".archana", "baseline.json");
+      const baselinePath = join(testDir, ".sekko-arch", "baseline.json");
       expect(existsSync(baselinePath)).toBe(true);
 
       const raw = readFileSync(baselinePath, "utf-8");
@@ -194,7 +194,7 @@ describe("E2E: full pipeline", () => {
     });
 
     it("fails gate when baseline is missing", () => {
-      const baselinePath = join(testDir, ".archana", "baseline.json");
+      const baselinePath = join(testDir, ".sekko-arch", "baseline.json");
       if (existsSync(baselinePath)) {
         rmSync(baselinePath);
       }
@@ -208,7 +208,7 @@ describe("E2E: full pipeline", () => {
 
   describe("edge cases", () => {
     it("scan exits 0 for directory with no TS files", () => {
-      const emptyDir = mkdtempSync(join(tmpdir(), "archana-empty-"));
+      const emptyDir = mkdtempSync(join(tmpdir(), "sekko-empty-"));
 
       try {
         const { exitCode, stdout } = runCliFrom(emptyDir, "scan", ".");
@@ -220,7 +220,7 @@ describe("E2E: full pipeline", () => {
     });
 
     it("check exits 1 when rules.toml is missing", () => {
-      const noRulesDir = mkdtempSync(join(tmpdir(), "archana-norules-"));
+      const noRulesDir = mkdtempSync(join(tmpdir(), "sekko-norules-"));
       writeFileSync(join(noRulesDir, "index.ts"), "export const x = 1;\n");
 
       try {
@@ -233,11 +233,11 @@ describe("E2E: full pipeline", () => {
     });
 
     it("check exits 1 when rules.toml contains invalid TOML", () => {
-      const badTomlDir = mkdtempSync(join(tmpdir(), "archana-badtoml-"));
+      const badTomlDir = mkdtempSync(join(tmpdir(), "sekko-badtoml-"));
       writeFileSync(join(badTomlDir, "index.ts"), "export const x = 1;\n");
-      mkdirSync(join(badTomlDir, ".archana"), { recursive: true });
+      mkdirSync(join(badTomlDir, ".sekko-arch"), { recursive: true });
       writeFileSync(
-        join(badTomlDir, ".archana", "rules.toml"),
+        join(badTomlDir, ".sekko-arch", "rules.toml"),
         "[invalid toml = = =",
       );
 

@@ -14,7 +14,7 @@ describe("error handling: executePipeline", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "archana-err-"));
+    dir = mkdtempSync(join(tmpdir(), "sekko-err-"));
   });
 
   afterEach(() => {
@@ -130,7 +130,7 @@ describe("error handling: gate baseline", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "archana-gate-err-"));
+    dir = mkdtempSync(join(tmpdir(), "sekko-gate-err-"));
     writeFileSync(join(dir, "index.ts"), "export const x = 1;\n");
   });
 
@@ -138,7 +138,7 @@ describe("error handling: gate baseline", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("saveBaseline creates .archana directory if missing", async () => {
+  it("saveBaseline creates .sekko-arch directory if missing", async () => {
     const { saveBaseline } = await import("../cli/gate.js");
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -161,9 +161,9 @@ describe("error handling: gate baseline", () => {
   it("compareBaseline throws descriptive error on corrupted JSON", async () => {
     const { compareBaseline } = await import("../cli/gate.js");
 
-    mkdirSync(join(dir, ".archana"), { recursive: true });
+    mkdirSync(join(dir, ".sekko-arch"), { recursive: true });
     writeFileSync(
-      join(dir, ".archana", "baseline.json"),
+      join(dir, ".sekko-arch", "baseline.json"),
       "not valid json {{{",
     );
 
@@ -173,9 +173,9 @@ describe("error handling: gate baseline", () => {
   it("compareBaseline throws descriptive error on invalid schema", async () => {
     const { compareBaseline } = await import("../cli/gate.js");
 
-    mkdirSync(join(dir, ".archana"), { recursive: true });
+    mkdirSync(join(dir, ".sekko-arch"), { recursive: true });
     writeFileSync(
-      join(dir, ".archana", "baseline.json"),
+      join(dir, ".sekko-arch", "baseline.json"),
       JSON.stringify({ wrong: "schema" }),
     );
 
@@ -187,7 +187,7 @@ describe("error handling: rules parser", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "archana-rules-err-"));
+    dir = mkdtempSync(join(tmpdir(), "sekko-rules-err-"));
   });
 
   afterEach(() => {
@@ -204,9 +204,9 @@ describe("error handling: rules parser", () => {
   it("throws descriptive error on invalid TOML", async () => {
     const { parseRulesFile } = await import("../rules/toml-parser.js");
 
-    mkdirSync(join(dir, ".archana"), { recursive: true });
+    mkdirSync(join(dir, ".sekko-arch"), { recursive: true });
     writeFileSync(
-      join(dir, ".archana", "rules.toml"),
+      join(dir, ".sekko-arch", "rules.toml"),
       "[invalid = = toml syntax",
     );
 
@@ -216,8 +216,8 @@ describe("error handling: rules parser", () => {
   it("handles empty rules.toml gracefully", async () => {
     const { parseRulesFile } = await import("../rules/toml-parser.js");
 
-    mkdirSync(join(dir, ".archana"), { recursive: true });
-    writeFileSync(join(dir, ".archana", "rules.toml"), "");
+    mkdirSync(join(dir, ".sekko-arch"), { recursive: true });
+    writeFileSync(join(dir, ".sekko-arch", "rules.toml"), "");
 
     const result = parseRulesFile(dir);
     expect(result).toEqual({});
@@ -226,9 +226,9 @@ describe("error handling: rules parser", () => {
   it("handles rules.toml with only constraints", async () => {
     const { parseRulesFile } = await import("../rules/toml-parser.js");
 
-    mkdirSync(join(dir, ".archana"), { recursive: true });
+    mkdirSync(join(dir, ".sekko-arch"), { recursive: true });
     writeFileSync(
-      join(dir, ".archana", "rules.toml"),
+      join(dir, ".sekko-arch", "rules.toml"),
       "[constraints]\nmax_cycles = 5\n",
     );
 

@@ -8,7 +8,7 @@ describe("fsWalkFiles", () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "archana-test-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sekko-test-"));
   });
 
   afterEach(() => {

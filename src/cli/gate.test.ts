@@ -73,11 +73,11 @@ describe("saveBaseline", () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "archana-gate-test-"));
+    tmpDir = mkdtempSync(join(tmpdir(), "sekko-gate-test-"));
     vi.restoreAllMocks();
   });
 
-  it("creates .archana/baseline.json with correct structure", () => {
+  it("creates .sekko-arch/baseline.json with correct structure", () => {
     const health = makeGateHealth({
       coupling: 0.15,
       cycles: 2,
@@ -90,7 +90,7 @@ describe("saveBaseline", () => {
 
     saveBaseline(tmpDir);
 
-    const baselinePath = join(tmpDir, ".archana", "baseline.json");
+    const baselinePath = join(tmpDir, ".sekko-arch", "baseline.json");
     const raw = readFileSync(baselinePath, "utf-8");
     const baseline: Baseline = JSON.parse(raw);
 
@@ -114,7 +114,7 @@ describe("compareBaseline", () => {
   let tmpDir: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "archana-gate-test-"));
+    tmpDir = mkdtempSync(join(tmpdir(), "sekko-gate-test-"));
     vi.restoreAllMocks();
   });
 
@@ -133,7 +133,7 @@ describe("compareBaseline", () => {
       compositeGrade: health.compositeGrade,
       dimensionGrades,
     };
-    const dir = join(tmpDir, ".archana");
+    const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "baseline.json"), JSON.stringify(baseline));
   }
@@ -205,7 +205,7 @@ describe("compareBaseline", () => {
   });
 
   it("throws descriptive error when baseline file contains invalid JSON", () => {
-    const dir = join(tmpDir, ".archana");
+    const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "baseline.json"), "not valid json {{{");
 
@@ -215,7 +215,7 @@ describe("compareBaseline", () => {
   });
 
   it("throws descriptive error when baseline file has wrong shape", () => {
-    const dir = join(tmpDir, ".archana");
+    const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
       join(dir, "baseline.json"),
@@ -228,7 +228,7 @@ describe("compareBaseline", () => {
   });
 
   it("throws descriptive error when baseline has wrong field types", () => {
-    const dir = join(tmpDir, ".archana");
+    const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
       join(dir, "baseline.json"),
@@ -257,7 +257,7 @@ describe("compareBaseline", () => {
   });
 
   it("throws descriptive error when dimensionGrades is missing a field", () => {
-    const dir = join(tmpDir, ".archana");
+    const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
       join(dir, "baseline.json"),

@@ -10,7 +10,7 @@ describe("buildImportGraph", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archana-graph-"));
+    tempDir = mkdtempSync(join(tmpdir(), "sekko-graph-"));
     mkdirSync(join(tempDir, "src", "auth"), { recursive: true });
     mkdirSync(join(tempDir, "src", "utils"), { recursive: true });
     writeFileSync(join(tempDir, "src", "auth", "login.ts"), "export const a = 1;");

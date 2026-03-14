@@ -9,7 +9,7 @@ describe("resolveImports", () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "archana-resolver-"));
+    tempDir = mkdtempSync(join(tmpdir(), "sekko-resolver-"));
 
     // Create fixture files
     mkdirSync(join(tempDir, "src", "auth"), { recursive: true });

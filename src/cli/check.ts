@@ -9,7 +9,7 @@ export function runCheck(path: string): void {
   const config = parseRulesFile(absolutePath);
   if (config === null) {
     console.error(
-      "No .archana/rules.toml found. Create a rules file to use the check command.",
+      "No .sekko-arch/rules.toml found. Create a rules file to use the check command.",
     );
     process.exit(1);
     return;

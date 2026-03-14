@@ -75,14 +75,14 @@ function extractBaseline(health: HealthReport): Baseline {
 }
 
 function baselinePath(rootDir: string): string {
-  return join(resolve(rootDir), ".archana", "baseline.json");
+  return join(resolve(rootDir), ".sekko-arch", "baseline.json");
 }
 
 export function saveBaseline(rootDir: string): void {
   const { health } = executePipeline(resolve(rootDir));
   const baseline = extractBaseline(health);
 
-  const dir = join(resolve(rootDir), ".archana");
+  const dir = join(resolve(rootDir), ".sekko-arch");
   try {
     mkdirSync(dir, { recursive: true });
     writeFileSync(baselinePath(rootDir), JSON.stringify(baseline, null, 2));
@@ -90,7 +90,7 @@ export function saveBaseline(rootDir: string): void {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to save baseline: ${msg}`, { cause: err });
   }
-  console.log("Baseline saved to .archana/baseline.json");
+  console.log("Baseline saved to .sekko-arch/baseline.json");
 }
 
 export function compareBaseline(rootDir: string): {

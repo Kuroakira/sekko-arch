@@ -29,7 +29,7 @@ sekko-arch scan . --format json   # 機械可読なJSON出力
 
 ### check — ルールチェック
 
-`.archana/rules.toml` に定義した制約に違反がないかチェックする。違反があれば exit code 1 で終了するため、CIに組み込める。
+`.sekko-arch/rules.toml` に定義した制約に違反がないかチェックする。違反があれば exit code 1 で終了するため、CIに組み込める。
 
 ```bash
 sekko-arch check .
@@ -68,7 +68,7 @@ sekko-arch gate .
 
 ## ルール設定
 
-`.archana/rules.toml` でプロジェクト固有の制約を定義できる。
+`.sekko-arch/rules.toml` でプロジェクト固有の制約を定義できる。
 
 ```toml
 [constraints]
