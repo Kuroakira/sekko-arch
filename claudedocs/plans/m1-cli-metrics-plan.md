@@ -137,7 +137,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 
 ### Group D: Parser Pipeline
 
-### Task 11: Parser - tree-sitter Setup
+### [DONE] Task 11: Parser - tree-sitter Setup (completed 2026-03-14T10:29)
 
 - **Description**: Initialize tree-sitter with TypeScript grammar. Create a reusable parser instance. Implement `parseFile(source: string): Tree` wrapper that handles parse failures (returns null + warning).
 - **Files**: `src/parser/ts-grammar.ts`
@@ -145,7 +145,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Parse a valid TS file, parse an invalid file (returns null)
 - **Acceptance criteria**: tree-sitter parses TypeScript correctly, failures are caught and logged
 
-### Task 12: Parser - Function and Class Extraction
+### [DONE] Task 12: Parser - Function and Class Extraction (completed 2026-03-14T12:03)
 
 - **Description**: Extract functions (name, startLine, endLine, lineCount, paramCount) and classes (name, methods, kind) from a tree-sitter parse tree using query patterns. Handle function declarations, arrow functions, method definitions. Handle class declarations, interfaces, type aliases.
 - **Files**: `src/parser/extractors.ts`
@@ -153,7 +153,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with various TS function/class styles (named, arrow, method, async, generator, interface, type alias)
 - **Acceptance criteria**: All common TS function and class patterns are extracted correctly
 
-### Task 13: Parser - Cyclomatic Complexity
+### [DONE] Task 13: Parser - Cyclomatic Complexity (completed 2026-03-14T12:03)
 
 - **Description**: Compute extended cyclomatic complexity (Myers 1977) per function. Count: if, else if, for, while, do-while, switch case, catch, ternary (?), &&, ||, ??. Use tree-sitter query to capture branch nodes within each function's line range.
 - **Files**: `src/parser/complexity.ts`
@@ -161,7 +161,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with known-CC functions (linear=1, single if=2, nested=3+, boolean operators)
 - **Acceptance criteria**: CC values match manual counting, includes boolean operators (extended CC)
 
-### Task 14: Parser - Import Extraction
+### [DONE] Task 14: Parser - Import Extraction (completed 2026-03-14T12:07)
 
 - **Description**: Extract import specifiers from tree-sitter parse tree. Handle: `import ... from 'x'`, `import('x')`, `export ... from 'x'`, `require('x')`. Store raw specifier strings.
 - **Files**: `src/parser/extractors.ts` (extend)
@@ -169,7 +169,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with all import styles (static, dynamic, re-export, require)
 - **Acceptance criteria**: All static import/export patterns captured, dynamic imports detected
 
-### Task 15: Parser - Orchestrator
+### [DONE] Task 15: Parser - Orchestrator (completed 2026-03-14T12:13)
 
 - **Description**: Wire function/class/import extraction into a single `parseAndExtract(fileNode, source)` function. Populate `FileNode.sa` (StructuralAnalysis). Handle parse failures: set `sa = undefined`, log warning, continue.
 - **Files**: `src/parser/index.ts`
