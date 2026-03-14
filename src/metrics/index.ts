@@ -26,3 +26,5 @@ export {
   detectDegenerateCases,
   isSameModule,
 } from "./module-boundary.js";
+
+export { computeHealth } from "./health.js";

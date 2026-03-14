@@ -17,14 +17,14 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 | C | Scanner Pipeline (done) | 6-10 | Utils, file collection, line counting |
 | D | Parser Pipeline (done) | 11-15 | tree-sitter setup, extraction, complexity |
 | E | Graph & Metrics (done) | 16-25 | Import resolution, graph, all 7 metrics |
-| F | Grading & Output | 26-31 | Grading, CLI commands, formatters |
+| F | Grading & Output (done) | 26-31 | Grading, CLI commands, formatters |
 | G | Rules Engine | 32-37 | TOML parsing, constraints, check/gate commands |
 | H | Polish & Validation | 38-40 | E2E tests, perf benchmark, error handling |
 
 ### Dependency Flow
 
 ```
-A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
+A (done) → B (done) → C (done) → D (done) → E (done) → F (done) → G → H
                               ↘ F (grading is independent of rules)
 ```
 
@@ -259,9 +259,9 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Unit tests: isolated file (0), linear chain (depth-1 has max), star topology (center has max)
 - **Acceptance criteria**: Blast radius matches sentrux's reverse BFS, foundation exclusion for grading
 
-### Group F: Grading & Output
+### Group F: Grading & Output (done)
 
-### Task 26: Metrics - Orchestrator
+### [DONE] Task 26: Metrics - Orchestrator (completed 2026-03-14T13:28)
 
 - **Description**: Wire all metrics into `computeHealth(snapshot): HealthReport`. Call each metric computation, aggregate results into HealthReport.
 - **Files**: `src/metrics/index.ts`
@@ -269,7 +269,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Integration test with sample snapshot, verify all 7 metrics populated
 - **Acceptance criteria**: HealthReport fully populated with all 7 metric values and grades
 
-### Task 27: Grading - Per-dimension and Composite
+### [DONE] Task 27: Grading - Per-dimension and Composite (completed 2026-03-14T13:25)
 
 - **Description**: Implement grade thresholds for all 7 dimensions matching the design doc table. Implement composite grade: `min(floor(mean(all_dimension_values)), worst_dimension + 1)`. Grade values: A=4, B=3, C=2, D=1, F=0.
 - **Files**: `src/grading/index.ts`, `src/grading/thresholds.ts`
@@ -277,7 +277,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Unit tests for each dimension's threshold boundaries, composite grade edge cases (worst cap)
 - **Acceptance criteria**: All thresholds match design doc exactly, composite formula correct
 
-### Task 28: CLI - Commander Setup
+### [DONE] Task 28: CLI - Commander Setup (completed 2026-03-14T13:25)
 
 - **Description**: Set up commander with three subcommands: `scan [path]`, `check [path]`, `gate [--save] [path]`. Default path is `.`. Add `--format` option (table/json, default: table).
 - **Files**: `src/cli/index.ts`
@@ -285,7 +285,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Commander parses all subcommands and options correctly
 - **Acceptance criteria**: `archana scan .`, `archana check .`, `archana gate --save .` all parse correctly
 
-### Task 29: CLI - Scan Command
+### [DONE] Task 29: CLI - Scan Command (completed 2026-03-14T13:30)
 
 - **Description**: Implement the scan command: run full pipeline (scanner -> parser -> graph -> metrics -> grading), output results as table or JSON. Wire together all pipeline phases.
 - **Files**: `src/cli/scan.ts`
@@ -293,7 +293,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Integration test: scan a test fixture project, verify output contains all 7 metrics + composite grade
 - **Acceptance criteria**: `archana scan` outputs complete metrics table, `--format json` outputs valid JSON
 
-### Task 30: CLI - Table Formatter
+### [DONE] Task 30: CLI - Table Formatter (completed 2026-03-14T13:25)
 
 - **Description**: Format HealthReport as a human-readable table. Show: metric name, raw value, grade for each of the 7 dimensions. Show composite grade. Use manual string padding (no library dependency).
 - **Files**: `src/cli/formatters/table.ts`
@@ -301,7 +301,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
 - **Tests**: Unit test formatting a sample HealthReport
 - **Acceptance criteria**: Clean, aligned table output matching design doc specification
 
-### Task 31: CLI - JSON Formatter
+### [DONE] Task 31: CLI - JSON Formatter (completed 2026-03-14T13:25)
 
 - **Description**: Format HealthReport as JSON. Include all 7 metrics with raw values and grades, composite grade, and metadata (file count, scan duration).
 - **Files**: `src/cli/formatters/json.ts`
