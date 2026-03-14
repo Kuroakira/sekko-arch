@@ -15,8 +15,8 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 | A | Foundation (done) | 1-2 | Project init, dependencies |
 | B | Type System (done) | 3-5 | Core, snapshot, metrics, rules types |
 | C | Scanner Pipeline (done) | 6-10 | Utils, file collection, line counting |
-| D | Parser Pipeline | 11-15 | tree-sitter setup, extraction, complexity |
-| E | Graph & Metrics | 16-25 | Import resolution, graph, all 7 metrics |
+| D | Parser Pipeline (done) | 11-15 | tree-sitter setup, extraction, complexity |
+| E | Graph & Metrics (done) | 16-25 | Import resolution, graph, all 7 metrics |
 | F | Grading & Output | 26-31 | Grading, CLI commands, formatters |
 | G | Rules Engine | 32-37 | TOML parsing, constraints, check/gate commands |
 | H | Polish & Validation | 38-40 | E2E tests, perf benchmark, error handling |
@@ -24,7 +24,7 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 ### Dependency Flow
 
 ```
-A (done) → B (done) → C (done) → D → E → F → G → H
+A (done) → B (done) → C (done) → D (done) → E (done) → F → G → H
                               ↘ F (grading is independent of rules)
 ```
 
@@ -177,9 +177,9 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Integration test parsing a small TS file, verify all SA fields populated
 - **Acceptance criteria**: FileNode.sa correctly populated, parse failures produce warning + undefined sa (file still in results)
 
-### Group E: Graph & Metrics
+### Group E: Graph & Metrics (done)
 
-### Task 16: Graph - Import Resolution with oxc-resolver
+### [DONE] Task 16: Graph - Import Resolution with oxc-resolver (completed 2026-03-14T12:30)
 
 - **Description**: Use oxc-resolver to resolve import specifiers to absolute file paths. Configure with tsconfig.json paths if present. Filter out bare npm specifiers (no `.` or `/` prefix). Relativize resolved paths to project root.
 - **Files**: `src/graph/resolver.ts`
@@ -187,7 +187,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with tsconfig paths, relative imports, bare specifiers (filtered), barrel file re-exports
 - **Acceptance criteria**: Correctly resolves TS imports including path aliases, filters npm packages
 
-### Task 17: Graph - Import Graph Builder
+### [DONE] Task 17: Graph - Import Graph Builder (completed 2026-03-14T12:30)
 
 - **Description**: Build `ImportEdge[]` from resolved imports. For each file's `sa.imports`, resolve each specifier and create an edge. Deduplicate edges. Build adjacency list helper.
 - **Files**: `src/graph/import-graph.ts`, `src/graph/index.ts`
@@ -195,7 +195,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Integration test with multi-file TS fixture, verify edges match expected dependencies
 - **Acceptance criteria**: ImportGraph correctly represents file-to-file dependencies, no self-edges, no npm packages
 
-### Task 18: Metrics - Fan-in/Fan-out Maps
+### [DONE] Task 18: Metrics - Fan-in/Fan-out Maps (completed 2026-03-14T12:23)
 
 - **Description**: Compute per-file fan-in (number of files importing this file) and fan-out (number of files this file imports) from ImportEdge array.
 - **Files**: `src/metrics/fan-maps.ts`
@@ -203,7 +203,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit test with known edge set, verify fan counts
 - **Acceptance criteria**: Correct fan-in/fan-out counts for all files in the graph
 
-### Task 19: Metrics - Module Boundary Detection
+### [DONE] Task 19: Metrics - Module Boundary Detection (completed 2026-03-14T12:23)
 
 - **Description**: Compute depth-2 module assignments using `moduleOf()`. Detect degenerate cases: warn if <3 modules or single module has >80% of files. Compute `isSameModule()` for coupling calculations.
 - **Files**: `src/metrics/module-boundary.ts`
@@ -211,7 +211,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with various directory structures, degenerate case warnings
 - **Acceptance criteria**: Module assignments match sentrux behavior, warnings emitted for degenerate cases
 
-### Task 20: Metrics - Tarjan SCC (Cycles)
+### [DONE] Task 20: Metrics - Tarjan SCC (Cycles) (completed 2026-03-14T12:25)
 
 - **Description**: Implement iterative Tarjan's SCC algorithm. Return only SCCs with >1 member (actual cycles). Return cycle count and member files per cycle.
 - **Files**: `src/metrics/cycles.ts`
@@ -219,7 +219,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests: acyclic graph (0 cycles), single cycle, multiple cycles, self-loop (not a cycle)
 - **Acceptance criteria**: Correct cycle detection matching sentrux's Tarjan implementation, iterative (no stack overflow)
 
-### Task 21: Metrics - Coupling Score (SDP-aware)
+### [DONE] Task 21: Metrics - Coupling Score (SDP-aware) (completed 2026-03-14T12:28)
 
 - **Description**: Compute coupling score: ratio of cross-module edges to unstable targets vs total edges. Implement stable module detection using cascading instability check (I <= 0.15, fan-in >= 3). Edges to stable modules are excluded from coupling numerator.
 - **Files**: `src/metrics/coupling.ts`
@@ -227,7 +227,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests: all-intra-module (0.0), all cross-to-unstable (high), cross-to-stable (excluded), cascading stability
 - **Acceptance criteria**: Coupling score matches sentrux's SDP-aware calculation, stable modules correctly identified
 
-### Task 22: Metrics - Depth (Max Transitive Chain)
+### [DONE] Task 22: Metrics - Depth (Max Transitive Chain) (completed 2026-03-14T12:25)
 
 - **Description**: Compute maximum dependency depth using iterative longest-path DFS from seed nodes (entry points or root nodes with fan-in=0). Cap at node count to handle cycles.
 - **Files**: `src/metrics/depth.ts`
@@ -235,7 +235,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests: linear chain (depth=N), tree (depth=max path), cycle (capped), empty graph (0)
 - **Acceptance criteria**: Correct max depth matching sentrux implementation
 
-### Task 23: Metrics - God Files and Complex Functions
+### [DONE] Task 23: Metrics - God Files and Complex Functions (completed 2026-03-14T12:28)
 
 - **Description**: Detect god files (fan-out > 15, excluding entry points). Compute complex function ratio (CC > 15 / total functions). Entry point detection: files named `index.ts`, `main.ts`, or containing `createApp`/`createServer` patterns.
 - **Files**: `src/metrics/god-files.ts`, `src/metrics/complex-fns.ts`
@@ -243,7 +243,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests with known fan-out values and CC values
 - **Acceptance criteria**: God files correctly identified (entry points excluded), complex function ratio accurate
 
-### Task 24: Metrics - Levelization (Kahn Topological Sort)
+### [DONE] Task 24: Metrics - Levelization (Kahn Topological Sort) (completed 2026-03-14T12:28)
 
 - **Description**: Implement levelization via Kahn's topological sort on the SCC DAG. Compute per-file levels (0 = leaf). Detect upward violations (edges from lower level to higher level + intra-SCC edges). Compute upward violation ratio.
 - **Files**: `src/metrics/levelization.ts`
@@ -251,7 +251,7 @@ A (done) → B (done) → C (done) → D → E → F → G → H
 - **Tests**: Unit tests: clean DAG (0 violations), cycle (intra-SCC violations), mixed graph
 - **Acceptance criteria**: Level assignment and violation detection match sentrux's arch/graph.rs
 
-### Task 25: Metrics - Blast Radius
+### [DONE] Task 25: Metrics - Blast Radius (completed 2026-03-14T12:28)
 
 - **Description**: Compute per-file blast radius via reverse BFS. For each file, count how many files are transitively reachable through reverse edges (dependents). Compute max blast radius ratio (max reach / total files). Exclude foundation files (stable modules, high fan-in files, barrel files).
 - **Files**: `src/metrics/blast-radius.ts`
