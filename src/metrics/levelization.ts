@@ -37,10 +37,8 @@ export function computeLevelization(
   }
 
   const sccAdj = new Map<string, Set<string>>();
-  const sccInDegree = new Map<string, number>();
   for (const node of sccNodes) {
     sccAdj.set(node, new Set());
-    sccInDegree.set(node, 0);
   }
 
   for (const [from, neighbors] of adjacency) {
@@ -48,11 +46,7 @@ export function computeLevelization(
     for (const to of neighbors) {
       const toRepr = getRepr(to);
       if (fromRepr === toRepr) continue; // skip intra-SCC edges in DAG
-      const sccTargets = sccAdj.get(fromRepr);
-      if (sccTargets && !sccTargets.has(toRepr)) {
-        sccTargets.add(toRepr);
-        sccInDegree.set(toRepr, (sccInDegree.get(toRepr) ?? 0) + 1);
-      }
+      sccAdj.get(fromRepr)?.add(toRepr);
     }
   }
 
@@ -84,9 +78,9 @@ export function computeLevelization(
     }
   }
 
-  while (queue.length > 0) {
-    const node = queue.shift();
-    if (node === undefined) break;
+  let qi = 0;
+  while (qi < queue.length) {
+    const node = queue[qi++];
     const level = sccLevels.get(node) ?? 0;
 
     for (const parent of reverseAdj.get(node) ?? []) {

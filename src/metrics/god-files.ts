@@ -1,9 +1,15 @@
+export interface GodFilesResult {
+  readonly godFiles: readonly string[];
+  readonly count: number;
+  readonly ratio: number;
+}
+
 const GOD_FILE_THRESHOLD = 15;
 
 export function detectGodFiles(
   fanOut: ReadonlyMap<string, number>,
   entryPoints: ReadonlySet<string>,
-): string[] {
+): GodFilesResult {
   const godFiles: string[] = [];
 
   for (const [file, count] of fanOut) {
@@ -12,5 +18,8 @@ export function detectGodFiles(
     }
   }
 
-  return godFiles;
+  const totalFiles = fanOut.size;
+  const ratio = totalFiles === 0 ? 0 : godFiles.length / totalFiles;
+
+  return { godFiles, count: godFiles.length, ratio };
 }

@@ -15,12 +15,16 @@ function makeAdj(
 
 describe("computeMaxDepth", () => {
   it("returns 0 for empty graph", () => {
-    expect(computeMaxDepth(new Map())).toBe(0);
+    const result = computeMaxDepth(new Map());
+    expect(result.maxDepth).toBe(0);
+    expect(result.deepestPath).toHaveLength(0);
   });
 
   it("returns 0 for single node with no edges", () => {
     const adj = new Map([["a", [] as string[]]]);
-    expect(computeMaxDepth(adj)).toBe(0);
+    const result = computeMaxDepth(adj);
+    expect(result.maxDepth).toBe(0);
+    expect(result.deepestPath).toEqual(["a"]);
   });
 
   it("returns correct depth for linear chain", () => {
@@ -28,7 +32,9 @@ describe("computeMaxDepth", () => {
       ["a", "b"],
       ["b", "c"],
     ]);
-    expect(computeMaxDepth(adj)).toBe(2);
+    const result = computeMaxDepth(adj);
+    expect(result.maxDepth).toBe(2);
+    expect(result.deepestPath).toEqual(["a", "b", "c"]);
   });
 
   it("returns correct depth for tree", () => {
@@ -37,7 +43,9 @@ describe("computeMaxDepth", () => {
       ["a", "c"],
       ["b", "d"],
     ]);
-    expect(computeMaxDepth(adj)).toBe(2);
+    const result = computeMaxDepth(adj);
+    expect(result.maxDepth).toBe(2);
+    expect(result.deepestPath).toEqual(["a", "b", "d"]);
   });
 
   it("handles diamond graph", () => {
@@ -47,7 +55,8 @@ describe("computeMaxDepth", () => {
       ["b", "d"],
       ["c", "d"],
     ]);
-    expect(computeMaxDepth(adj)).toBe(2);
+    const result = computeMaxDepth(adj);
+    expect(result.maxDepth).toBe(2);
   });
 
   it("handles cycle without infinite loop", () => {
@@ -56,9 +65,11 @@ describe("computeMaxDepth", () => {
       ["b", "c"],
       ["c", "a"],
     ]);
-    const depth = computeMaxDepth(adj);
-    expect(depth).toBeLessThanOrEqual(3);
-    expect(depth).toBeGreaterThanOrEqual(0);
+    const result = computeMaxDepth(adj);
+    // 3-node cycle: depth is 2 (a->b->c, then c->a is cycle-break)
+    expect(result.maxDepth).toBe(2);
+    // Path should have no duplicate nodes
+    expect(new Set(result.deepestPath).size).toBe(result.deepestPath.length);
   });
 
   it("handles long chain", () => {
@@ -67,6 +78,10 @@ describe("computeMaxDepth", () => {
       edges.push([`n${i}`, `n${i + 1}`]);
     }
     const adj = makeAdj(edges);
-    expect(computeMaxDepth(adj)).toBe(9);
+    const result = computeMaxDepth(adj);
+    expect(result.maxDepth).toBe(9);
+    expect(result.deepestPath).toHaveLength(10);
+    expect(result.deepestPath[0]).toBe("n0");
+    expect(result.deepestPath[9]).toBe("n9");
   });
 });

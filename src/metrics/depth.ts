@@ -1,7 +1,12 @@
+export interface DepthResult {
+  readonly maxDepth: number;
+  readonly deepestPath: readonly string[];
+}
+
 export function computeMaxDepth(
   adjacency: ReadonlyMap<string, readonly string[]>,
-): number {
-  if (adjacency.size === 0) return 0;
+): DepthResult {
+  if (adjacency.size === 0) return { maxDepth: 0, deepestPath: [] };
 
   const nodeCount = adjacency.size;
 
@@ -21,37 +26,84 @@ export function computeMaxDepth(
     seeds = [...adjacency.keys()];
   }
 
-  // Memoized longest path with cycle detection
+  // Iterative DFS with memoization and cycle detection
   const memo = new Map<string, number>();
-  const visiting = new Set<string>();
+  const bestChild = new Map<string, string | null>();
 
-  function longestPath(node: string): number {
-    const cached = memo.get(node);
-    if (cached !== undefined) return cached;
-    if (visiting.has(node)) return 0; // cycle detected, stop
+  for (const seed of seeds) {
+    if (memo.has(seed)) continue;
 
-    visiting.add(node);
+    // Stack frames: [node, neighborIndex, currentMaxDepth, currentBestChild]
+    const stack: [string, number, number, string | null][] = [
+      [seed, 0, 0, null],
+    ];
+    const visiting = new Set<string>();
+    visiting.add(seed);
 
-    const neighbors = adjacency.get(node) ?? [];
-    let maxChild = 0;
-    for (const neighbor of neighbors) {
-      maxChild = Math.max(maxChild, 1 + longestPath(neighbor));
-      // Cap at node count to prevent pathological cases
-      if (maxChild >= nodeCount) {
-        maxChild = nodeCount;
-        break;
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1];
+      const [node, , ,] = frame;
+      const neighbors = adjacency.get(node) ?? [];
+
+      if (frame[1] < neighbors.length) {
+        const neighbor = neighbors[frame[1]];
+        frame[1]++;
+
+        if (memo.has(neighbor)) {
+          // Already computed — use cached value
+          const childDepth = 1 + (memo.get(neighbor) ?? 0);
+          if (childDepth > frame[2]) {
+            frame[2] = childDepth;
+            frame[3] = neighbor;
+          }
+        } else if (visiting.has(neighbor)) {
+          // Cycle detected — skip (depth contribution = 0)
+        } else {
+          // Push new frame for unvisited neighbor
+          visiting.add(neighbor);
+          stack.push([neighbor, 0, 0, null]);
+        }
+      } else {
+        // All neighbors processed — pop and propagate
+        stack.pop();
+        const depth = Math.min(frame[2], nodeCount); // cap for pathological cases
+        memo.set(node, depth);
+        bestChild.set(node, frame[3]);
+        visiting.delete(node);
+
+        // Propagate to parent
+        if (stack.length > 0) {
+          const parent = stack[stack.length - 1];
+          const childDepth = 1 + depth;
+          if (childDepth > parent[2]) {
+            parent[2] = childDepth;
+            parent[3] = node;
+          }
+        }
       }
     }
-
-    visiting.delete(node);
-    memo.set(node, maxChild);
-    return maxChild;
   }
 
+  // Find the seed with maximum depth
   let maxDepth = 0;
+  let maxSeed = seeds[0];
   for (const seed of seeds) {
-    maxDepth = Math.max(maxDepth, longestPath(seed));
+    const depth = memo.get(seed) ?? 0;
+    if (depth > maxDepth) {
+      maxDepth = depth;
+      maxSeed = seed;
+    }
   }
 
-  return maxDepth;
+  // Reconstruct deepest path (with visited check to handle cycles)
+  const deepestPath: string[] = [];
+  const visited = new Set<string>();
+  let current: string | null = maxSeed ?? null;
+  while (current !== null && !visited.has(current)) {
+    visited.add(current);
+    deepestPath.push(current);
+    current = bestChild.get(current) ?? null;
+  }
+
+  return { maxDepth, deepestPath };
 }
