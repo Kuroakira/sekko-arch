@@ -43,18 +43,16 @@ describe("executePipeline", () => {
     expect(["A", "B", "C", "D", "F"]).toContain(health.compositeGrade);
   });
 
-  it("returns all seven dimensions", () => {
+  it("returns all 19 dimensions", () => {
     const dir = createFixtureDir();
     const { health } = executePipeline(dir);
 
     const dimensionNames = Object.keys(health.dimensions);
+    expect(dimensionNames).toHaveLength(19);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
-    expect(dimensionNames).toContain("depth");
-    expect(dimensionNames).toContain("godFiles");
-    expect(dimensionNames).toContain("complexFn");
-    expect(dimensionNames).toContain("levelization");
-    expect(dimensionNames).toContain("blastRadius");
+    expect(dimensionNames).toContain("cohesion");
+    expect(dimensionNames).toContain("attackSurface");
   });
 
   it("records scanDurationMs as a positive number", () => {

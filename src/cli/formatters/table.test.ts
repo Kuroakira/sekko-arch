@@ -16,7 +16,7 @@ describe("formatTable", () => {
     expect(output).toContain("Grade");
   });
 
-  it("displays original 7 dimensions with human-readable names", () => {
+  it("displays all 19 dimensions with human-readable names", () => {
     const output = formatTable(makeHealth());
     expect(output).toContain("Cycles");
     expect(output).toContain("Coupling");
@@ -25,6 +25,18 @@ describe("formatTable", () => {
     expect(output).toContain("Complex Fns");
     expect(output).toContain("Levelization");
     expect(output).toContain("Blast Radius");
+    expect(output).toContain("Cohesion");
+    expect(output).toContain("Entropy");
+    expect(output).toContain("Cognitive Complexity");
+    expect(output).toContain("Hotspots");
+    expect(output).toContain("Long Functions");
+    expect(output).toContain("Large Files");
+    expect(output).toContain("High Params");
+    expect(output).toContain("Duplication");
+    expect(output).toContain("Dead Code");
+    expect(output).toContain("Comments");
+    expect(output).toContain("Distance from Main Seq");
+    expect(output).toContain("Attack Surface");
   });
 
   it("formats integer dimensions without decimal places", () => {

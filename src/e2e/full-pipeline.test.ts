@@ -11,6 +11,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
+import { DIMENSION_NAMES } from "../dimensions.js";
 
 const FIXTURE_SRC = resolve(
   import.meta.dirname,
@@ -94,7 +95,7 @@ describe("E2E: full pipeline", () => {
   });
 
   describe("scan command", () => {
-    it("produces table output with all 7 dimensions", () => {
+    it("produces table output with all 19 dimensions", () => {
       const { stdout, exitCode } = runCli("scan", ".");
 
       expect(exitCode).toBe(0);
@@ -115,22 +116,13 @@ describe("E2E: full pipeline", () => {
       expect(Number(match?.[1] ?? "0")).toBe(10);
     });
 
-    it("produces valid JSON with all dimensions and correct file count", () => {
+    it("produces valid JSON with all 19 dimensions and correct file count", () => {
       const result = scanJson();
 
       expect(result.compositeGrade).toMatch(/^[A-DF]$/);
       expect(result.metadata.fileCount).toBe(10);
 
-      const dimensionNames = [
-        "cycles",
-        "coupling",
-        "depth",
-        "godFiles",
-        "complexFn",
-        "levelization",
-        "blastRadius",
-      ];
-      for (const name of dimensionNames) {
+      for (const name of DIMENSION_NAMES) {
         expect(result.dimensions).toHaveProperty(name);
         expect(result.dimensions[name]).toHaveProperty("rawValue");
         expect(result.dimensions[name]).toHaveProperty("grade");

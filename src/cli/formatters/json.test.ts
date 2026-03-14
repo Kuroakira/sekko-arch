@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import type { DimensionName, HealthReport } from "../../types/metrics.js";
+import type { HealthReport } from "../../types/metrics.js";
 import { formatJson } from "./json.js";
 import { makeHealth } from "../../testing/fixtures.js";
+import { DIMENSION_NAMES } from "../../dimensions.js";
 
 describe("formatJson", () => {
   it("returns valid JSON", () => {
@@ -9,7 +10,7 @@ describe("formatJson", () => {
     expect(() => JSON.parse(result)).not.toThrow();
   });
 
-  it("includes all 7 dimensions with rawValue and grade", () => {
+  it("includes all 19 dimensions with rawValue and grade", () => {
     const report = makeHealth();
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
     const dimensions = parsed["dimensions"] as Record<
@@ -17,17 +18,7 @@ describe("formatJson", () => {
       Record<string, unknown>
     >;
 
-    const expectedDimensions: DimensionName[] = [
-      "cycles",
-      "coupling",
-      "depth",
-      "godFiles",
-      "complexFn",
-      "levelization",
-      "blastRadius",
-    ];
-
-    for (const dim of expectedDimensions) {
+    for (const dim of DIMENSION_NAMES) {
       expect(dimensions[dim]).toBeDefined();
       expect(dimensions[dim]["rawValue"]).toBe(
         report.dimensions[dim].rawValue
