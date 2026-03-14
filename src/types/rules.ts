@@ -12,3 +12,28 @@ export interface RuleCheckResult {
   readonly violations: readonly RuleViolation[];
   readonly rulesChecked: number;
 }
+
+export interface ConstraintsConfig {
+  readonly max_cycles?: number;
+  readonly max_coupling?: number;
+  readonly max_cc?: number;
+  readonly no_god_files?: boolean;
+}
+
+export interface LayerConfig {
+  readonly name: string;
+  readonly paths: readonly string[];
+  readonly order: number;
+}
+
+export interface BoundaryConfig {
+  readonly from: string;
+  readonly to: string;
+  readonly reason?: string;
+}
+
+export interface RulesConfig {
+  readonly constraints?: ConstraintsConfig;
+  readonly layers?: readonly LayerConfig[];
+  readonly boundaries?: readonly BoundaryConfig[];
+}

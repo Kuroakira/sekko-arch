@@ -2,6 +2,8 @@
 
 import { Command, Option } from "commander";
 import { runScan } from "./scan.js";
+import { runCheck } from "./check.js";
+import { runGate } from "./gate.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -29,8 +31,8 @@ export function createProgram(): Command {
     .command("check")
     .description("Run architecture checks")
     .argument("[path]", "path to check", ".")
-    .action((_path: string) => {
-      console.log("check: not implemented yet");
+    .action((checkPath: string) => {
+      runCheck(checkPath);
     });
 
   program
@@ -38,8 +40,8 @@ export function createProgram(): Command {
     .description("Run quality gate")
     .argument("[path]", "path to gate", ".")
     .option("--save", "save snapshot", false)
-    .action((_path: string) => {
-      console.log("gate: not implemented yet");
+    .action((gatePath: string, opts: { save: boolean }) => {
+      runGate(gatePath, { save: opts.save });
     });
 
   return program;

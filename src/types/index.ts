@@ -19,4 +19,12 @@ export type {
   HealthReport,
 } from "./metrics.js";
 
-export type { Severity, RuleViolation, RuleCheckResult } from "./rules.js";
+export type {
+  Severity,
+  RuleViolation,
+  RuleCheckResult,
+  ConstraintsConfig,
+  LayerConfig,
+  BoundaryConfig,
+  RulesConfig,
+} from "./rules.js";
