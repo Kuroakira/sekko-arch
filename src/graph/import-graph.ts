@@ -1,4 +1,4 @@
-import type { FileNode } from "../types/index.js";
+import type { FileNode } from "../types/core.js";
 import type { ImportEdge, ImportGraph } from "../types/snapshot.js";
 import { resolveImports } from "./resolver.js";
 

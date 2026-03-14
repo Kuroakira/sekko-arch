@@ -1,8 +1,5 @@
-import type {
-  ConstraintsConfig,
-  HealthReport,
-  RuleViolation,
-} from "../types/index.js";
+import type { ConstraintsConfig, RuleViolation } from "../types/rules.js";
+import type { HealthReport } from "../types/metrics.js";
 
 interface ComplexFunction {
   readonly name: string;

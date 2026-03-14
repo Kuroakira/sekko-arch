@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { computeHealth } from "./health.js";
-import type { FileNode, ImportEdge } from "../types/index.js";
+import type { FileNode } from "../types/core.js";
+import type { ImportEdge } from "../types/snapshot.js";
 import { makeFileNode, makeSnapshot } from "../testing/fixtures.js";
 
 function makeFile(

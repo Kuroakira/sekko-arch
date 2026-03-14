@@ -1,5 +1,5 @@
-import type { FileNode } from "../types/index.js";
-import { LARGE_FILE_LINE_THRESHOLD } from "../constants.js";
+import type { FileNode } from "../types/core.js";
+import { LARGE_FILE_LINE_THRESHOLD } from "./thresholds.js";
 
 export function computeLargeFileRatio(files: readonly FileNode[]): number {
   if (files.length === 0) return 0;

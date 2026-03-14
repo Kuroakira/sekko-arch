@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeCoupling } from "./coupling.js";
-import type { ImportEdge } from "../types/index.js";
+import type { ImportEdge } from "../types/snapshot.js";
 
 describe("computeCoupling", () => {
   it("returns 0 for no edges", () => {

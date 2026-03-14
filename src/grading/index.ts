@@ -1,2 +1,2 @@
-export { gradeDimension, gradeToValue, valueToGrade } from "./thresholds.js";
+export { gradeDimension, gradeToValue, valueToGrade } from "../dimensions.js";
 export { computeCompositeGrade } from "./grade.js";

@@ -1,9 +1,6 @@
-import type {
-  RulesConfig,
-  HealthReport,
-  ImportEdge,
-  RuleCheckResult,
-} from "../types/index.js";
+import type { RulesConfig, RuleCheckResult } from "../types/rules.js";
+import type { HealthReport } from "../types/metrics.js";
+import type { ImportEdge } from "../types/snapshot.js";
 import { checkConstraints } from "./constraints.js";
 import { checkLayers } from "./layers.js";
 import { checkBoundaries } from "./boundaries.js";

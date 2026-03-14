@@ -105,4 +105,34 @@ describe("fsWalkFiles", () => {
     // Ensure no absolute paths leak
     expect(result.every((p) => !p.startsWith("/"))).toBe(true);
   });
+
+  it("excludes .test.ts files", () => {
+    createFile("src/index.ts");
+    createFile("src/index.test.ts");
+    createFile("src/utils/helper.ts");
+    createFile("src/utils/helper.test.ts");
+
+    const result = fsWalkFiles(tmpDir);
+
+    expect(result.sort()).toEqual(["src/index.ts", "src/utils/helper.ts"]);
+  });
+
+  it("excludes .test.tsx files", () => {
+    createFile("src/app.tsx");
+    createFile("src/app.test.tsx");
+
+    const result = fsWalkFiles(tmpDir);
+
+    expect(result).toEqual(["src/app.tsx"]);
+  });
+
+  it("excludes testing/ and fixtures/ directories", () => {
+    createFile("src/index.ts");
+    createFile("src/testing/fixtures.ts");
+    createFile("src/e2e/fixtures/sample/src/api/middleware.ts");
+
+    const result = fsWalkFiles(tmpDir);
+
+    expect(result).toEqual(["src/index.ts"]);
+  });
 });

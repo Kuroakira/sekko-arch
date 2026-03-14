@@ -1,4 +1,4 @@
-import type { FuncInfo } from "../types/index.js";
+import type { FuncInfo } from "../types/core.js";
 
 export function computeDuplicationRatio(functions: readonly FuncInfo[]): number {
   if (functions.length === 0) return 0;

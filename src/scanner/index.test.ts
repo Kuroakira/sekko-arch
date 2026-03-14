@@ -104,4 +104,17 @@ export function main() {
     expect(result[0].funcs).toBe(0);
     expect(result[0].sa).toBeUndefined();
   });
+
+  it("excludes test files (.test.ts and .test.tsx)", () => {
+    createFile("src/index.ts", "export const x = 1;\n");
+    createFile("src/index.test.ts", 'import { x } from "./index";\n');
+    createFile("src/app.tsx", "const App = () => <div />;\n");
+    createFile("src/app.test.tsx", "it('works', () => {});\n");
+
+    const result = scanFiles(tmpDir);
+
+    expect(result).toHaveLength(2);
+    const paths = result.map((f) => f.path).sort();
+    expect(paths).toEqual(["src/app.tsx", "src/index.ts"]);
+  });
 });

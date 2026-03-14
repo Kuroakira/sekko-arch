@@ -1,4 +1,4 @@
-import type { DimensionName, Grade } from "./types/metrics.js";
+import type { DimensionName, Grade, GradeValue } from "./types/metrics.js";
 
 export type ThresholdEntry = readonly [number, Grade];
 
@@ -109,10 +109,10 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
     label: "Cohesion",
     isInteger: false,
     thresholds: [
-      [0.3, "A"],
-      [0.5, "B"],
-      [0.7, "C"],
-      [0.9, "D"],
+      [0.5, "A"],
+      [0.7, "B"],
+      [0.85, "C"],
+      [1.0, "D"],
       [Infinity, "F"],
     ],
   },
@@ -230,10 +230,10 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
     label: "Distance from Main Seq",
     isInteger: false,
     thresholds: [
-      [0.2, "A"],
-      [0.35, "B"],
-      [0.5, "C"],
-      [0.7, "D"],
+      [0.3, "A"],
+      [0.5, "B"],
+      [0.7, "C"],
+      [0.85, "D"],
       [Infinity, "F"],
     ],
   },
@@ -242,10 +242,10 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
     label: "Attack Surface",
     isInteger: false,
     thresholds: [
-      [0.3, "A"],
-      [0.45, "B"],
-      [0.6, "C"],
-      [0.8, "D"],
+      [0.75, "A"],
+      [0.85, "B"],
+      [0.92, "C"],
+      [0.97, "D"],
       [Infinity, "F"],
     ],
   },
@@ -262,4 +262,46 @@ export function getDimensionConfig(name: DimensionName): DimensionConfig {
     throw new Error(`Unknown dimension: ${String(name)}`);
   }
   return config;
+}
+
+const GRADE_TO_VALUE: ReadonlyMap<Grade, GradeValue> = new Map([
+  ["A", 4],
+  ["B", 3],
+  ["C", 2],
+  ["D", 1],
+  ["F", 0],
+]);
+
+const VALUE_TO_GRADE: ReadonlyMap<GradeValue, Grade> = new Map([
+  [4, "A"],
+  [3, "B"],
+  [2, "C"],
+  [1, "D"],
+  [0, "F"],
+]);
+
+export function gradeToValue(grade: Grade): GradeValue {
+  const value = GRADE_TO_VALUE.get(grade);
+  if (value === undefined) {
+    throw new Error(`Unknown grade: ${String(grade)}`);
+  }
+  return value;
+}
+
+export function valueToGrade(value: GradeValue): Grade {
+  const grade = VALUE_TO_GRADE.get(value);
+  if (grade === undefined) {
+    throw new Error(`Unknown grade value: ${String(value)}`);
+  }
+  return grade;
+}
+
+export function gradeDimension(name: DimensionName, rawValue: number): Grade {
+  const config = getDimensionConfig(name);
+  for (const [upperBound, grade] of config.thresholds) {
+    if (rawValue <= upperBound) {
+      return grade;
+    }
+  }
+  return "F";
 }

@@ -1,9 +1,13 @@
-export const STABILITY_INSTABILITY_THRESHOLD = 0.15;
-export const STABILITY_FAN_IN_THRESHOLD = 3;
-export const GOD_FILE_FAN_OUT_THRESHOLD = 15;
-export const COMPLEXITY_CC_THRESHOLD = 15;
-export const COGNITIVE_COMPLEXITY_THRESHOLD = 15;
-export const LONG_FUNCTION_LINE_THRESHOLD = 50;
-export const LARGE_FILE_LINE_THRESHOLD = 500;
-export const HIGH_PARAMS_THRESHOLD = 4;
-export const HOTSPOT_SCORE_THRESHOLD = 5.0;
+// Re-export from metrics/thresholds.ts for backward compatibility.
+// The canonical location is now src/metrics/thresholds.ts.
+export {
+  STABILITY_INSTABILITY_THRESHOLD,
+  STABILITY_FAN_IN_THRESHOLD,
+  GOD_FILE_FAN_OUT_THRESHOLD,
+  COMPLEXITY_CC_THRESHOLD,
+  COGNITIVE_COMPLEXITY_THRESHOLD,
+  LONG_FUNCTION_LINE_THRESHOLD,
+  LARGE_FILE_LINE_THRESHOLD,
+  HIGH_PARAMS_THRESHOLD,
+  HOTSPOT_SCORE_THRESHOLD,
+} from "./metrics/thresholds.js";

@@ -6,7 +6,7 @@ import type {
   HealthReport,
   DimensionGrades,
   Grade,
-} from "../types/index.js";
+} from "../types/metrics.js";
 import { makeDimension, makeFileNode, makeHealth } from "../testing/fixtures.js";
 import { DIMENSION_NAMES } from "../dimensions.js";
 

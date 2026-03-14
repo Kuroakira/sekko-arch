@@ -1,4 +1,4 @@
-import type { ImportEdge } from "../types/index.js";
+import type { ImportEdge } from "../types/snapshot.js";
 import { isStable } from "./stability.js";
 
 export interface CouplingResult {

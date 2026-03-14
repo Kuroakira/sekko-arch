@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { basename, extname, join } from "node:path";
-import type { FileNode, Language } from "../types/index.js";
+import type { FileNode, Language } from "../types/core.js";
 import { gitListFiles } from "./git-files.js";
 import { fsWalkFiles } from "./fs-walk.js";
 import { countLines } from "./line-counter.js";

@@ -1,14 +1,12 @@
+import type { FileNode, FuncInfo } from "../types/core.js";
+import type { ImportEdge, Snapshot } from "../types/snapshot.js";
 import type {
   DimensionName,
   DimensionResult,
   DimensionGrades,
   Grade,
   HealthReport,
-  FileNode,
-  FuncInfo,
-  ImportEdge,
-  Snapshot,
-} from "../types/index.js";
+} from "../types/metrics.js";
 import { DIMENSION_NAMES } from "../dimensions.js";
 
 export function makeDimension(

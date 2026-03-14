@@ -1,10 +1,10 @@
+import type { Snapshot } from "../types/snapshot.js";
 import type {
-  Snapshot,
   DimensionName,
   DimensionGrades,
   DimensionResult,
   HealthReport,
-} from "../types/index.js";
+} from "../types/metrics.js";
 import { computeCompositeGrade } from "../grading/grade.js";
 import { buildMetricContext } from "./context.js";
 import { METRIC_COMPUTATIONS } from "./registry.js";

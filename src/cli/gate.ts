@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { Grade, HealthReport } from "../types/index.js";
+import type { Grade, HealthReport } from "../types/metrics.js";
 import { DIMENSION_NAMES } from "../dimensions.js";
 import { executePipeline } from "./scan.js";
 

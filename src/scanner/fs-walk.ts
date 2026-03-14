@@ -1,8 +1,15 @@
 import { readdirSync } from "node:fs";
 import { join, relative, extname } from "node:path";
 
-const EXCLUDED_DIRS = new Set(["node_modules", "dist", ".git"]);
+const EXCLUDED_DIRS = new Set([
+  "node_modules",
+  "dist",
+  ".git",
+  "testing",
+  "fixtures",
+]);
 const TS_EXTENSIONS = new Set([".ts", ".tsx"]);
+const TEST_FILE_PATTERN = /\.test\.tsx?$/;
 
 /**
  * Recursively walk the filesystem collecting TypeScript files.
@@ -31,7 +38,10 @@ function walk(dir: string, rootDir: string, results: string[]): void {
         walk(join(dir, entry.name), rootDir, results);
       }
     } else if (entry.isFile()) {
-      if (TS_EXTENSIONS.has(extname(entry.name))) {
+      if (
+        TS_EXTENSIONS.has(extname(entry.name)) &&
+        !TEST_FILE_PATTERN.test(entry.name)
+      ) {
         results.push(relative(rootDir, join(dir, entry.name)));
       }
     }

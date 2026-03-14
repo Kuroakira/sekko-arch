@@ -1,7 +1,7 @@
 import { dirname, join, relative } from "node:path";
 import { realpathSync } from "node:fs";
 import { ResolverFactory } from "oxc-resolver";
-import type { ImportInfo } from "../types/index.js";
+import type { ImportInfo } from "../types/core.js";
 
 function isRelativeSpecifier(specifier: string): boolean {
   return specifier.startsWith(".") || specifier.startsWith("/");

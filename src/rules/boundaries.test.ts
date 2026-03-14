@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { checkBoundaries } from "./boundaries.js";
-import type { BoundaryConfig, ImportEdge } from "../types/index.js";
+import type { BoundaryConfig } from "../types/rules.js";
+import type { ImportEdge } from "../types/snapshot.js";
 
 describe("checkBoundaries", () => {
   it("generates a violation when an edge matches a boundary rule", () => {

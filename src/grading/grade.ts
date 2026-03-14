@@ -1,5 +1,5 @@
 import type { DimensionGrades, Grade, GradeValue } from "../types/metrics.js";
-import { gradeToValue, valueToGrade } from "./thresholds.js";
+import { gradeToValue, valueToGrade } from "../dimensions.js";
 
 const VALID_GRADE_VALUES: readonly GradeValue[] = [0, 1, 2, 3, 4];
 

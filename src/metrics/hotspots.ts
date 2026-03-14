@@ -1,5 +1,5 @@
 import type { FanMaps } from "./fan-maps.js";
-import { HOTSPOT_SCORE_THRESHOLD } from "../constants.js";
+import { HOTSPOT_SCORE_THRESHOLD } from "./thresholds.js";
 
 export function computeHotspotRatio(fanMaps: FanMaps): number {
   const allFiles = new Set<string>([

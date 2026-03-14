@@ -1,4 +1,4 @@
-import type { FileNode } from "../types/index.js";
+import type { FileNode } from "../types/core.js";
 
 export function computeDeadCodeRatio(
   reverseAdjacency: ReadonlyMap<string, readonly string[]>,

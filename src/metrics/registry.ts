@@ -1,13 +1,27 @@
 import type { DimensionName, DimensionResult } from "../types/metrics.js";
-import { gradeDimension } from "../grading/thresholds.js";
-import { COMPLEXITY_CC_THRESHOLD } from "../constants.js";
-import { DIMENSION_NAMES } from "../dimensions.js";
+import {
+  COMPLEXITY_CC_THRESHOLD,
+  COGNITIVE_COMPLEXITY_THRESHOLD,
+} from "./thresholds.js";
+import { DIMENSION_NAMES, gradeDimension } from "../dimensions.js";
 import { computeCoupling } from "./coupling.js";
 import { computeMaxDepth } from "./depth.js";
 import { detectGodFiles } from "./god-files.js";
 import { computeComplexFnRatio } from "./complex-fns.js";
 import { computeLevelization } from "./levelization.js";
 import { computeBlastRadius } from "./blast-radius.js";
+import { computeCognitiveComplexityRatio } from "./cognitive-complexity.js";
+import { computeHotspotRatio } from "./hotspots.js";
+import { computeLongFunctionRatio } from "./long-functions.js";
+import { computeLargeFileRatio } from "./large-files.js";
+import { computeHighParamsRatio } from "./high-params.js";
+import { computeDuplicationRatio } from "./duplication.js";
+import { computeDeadCodeRatio } from "./dead-code.js";
+import { computeCommentRawValue } from "./comments.js";
+import { computeCohesion } from "./cohesion.js";
+import { computeEntropy } from "./entropy.js";
+import { computeDistanceFromMainSeq } from "./distance-main-seq.js";
+import { computeAttackSurface } from "./attack-surface.js";
 import type { MetricContext } from "./context.js";
 
 function makeDimensionResult(
@@ -26,17 +40,6 @@ function makeDimensionResult(
 export interface MetricComputation {
   readonly name: DimensionName;
   readonly compute: (ctx: MetricContext) => DimensionResult;
-}
-
-// Stub computation for dimensions not yet implemented.
-// Returns rawValue 0 and grade "A". Will be replaced with real implementations in Groups C/D.
-function stubComputation(name: DimensionName): MetricComputation {
-  return {
-    name,
-    compute() {
-      return makeDimensionResult(name, 0);
-    },
-  };
 }
 
 export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
@@ -120,19 +123,113 @@ export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
       });
     },
   },
-  // Stub computations for M2 dimensions — replaced with real implementations in Groups C/D
-  stubComputation("cohesion"),
-  stubComputation("entropy"),
-  stubComputation("cognitiveComplexity"),
-  stubComputation("hotspots"),
-  stubComputation("longFunctions"),
-  stubComputation("largeFiles"),
-  stubComputation("highParams"),
-  stubComputation("duplication"),
-  stubComputation("deadCode"),
-  stubComputation("comments"),
-  stubComputation("distanceFromMainSeq"),
-  stubComputation("attackSurface"),
+  {
+    name: "cognitiveComplexity",
+    compute(ctx) {
+      const ratio = computeCognitiveComplexityRatio(ctx.allFunctions);
+      return makeDimensionResult("cognitiveComplexity", ratio, {
+        totalFunctions: ctx.allFunctions.length,
+        complexCount: ctx.allFunctions.filter(
+          (fn) => fn.cognitiveComplexity > COGNITIVE_COMPLEXITY_THRESHOLD,
+        ).length,
+      });
+    },
+  },
+  {
+    name: "hotspots",
+    compute(ctx) {
+      const ratio = computeHotspotRatio(ctx.fanMaps);
+      return makeDimensionResult("hotspots", ratio);
+    },
+  },
+  {
+    name: "longFunctions",
+    compute(ctx) {
+      const ratio = computeLongFunctionRatio(ctx.allFunctions);
+      return makeDimensionResult("longFunctions", ratio);
+    },
+  },
+  {
+    name: "largeFiles",
+    compute(ctx) {
+      const ratio = computeLargeFileRatio(ctx.snapshot.files);
+      return makeDimensionResult("largeFiles", ratio);
+    },
+  },
+  {
+    name: "highParams",
+    compute(ctx) {
+      const ratio = computeHighParamsRatio(ctx.allFunctions);
+      return makeDimensionResult("highParams", ratio);
+    },
+  },
+  {
+    name: "duplication",
+    compute(ctx) {
+      const ratio = computeDuplicationRatio(ctx.allFunctions);
+      return makeDimensionResult("duplication", ratio);
+    },
+  },
+  {
+    name: "deadCode",
+    compute(ctx) {
+      const ratio = computeDeadCodeRatio(
+        ctx.snapshot.importGraph.reverseAdjacency,
+        ctx.entryPoints,
+        ctx.snapshot.files,
+      );
+      return makeDimensionResult("deadCode", ratio);
+    },
+  },
+  {
+    name: "comments",
+    compute(ctx) {
+      const rawValue = computeCommentRawValue(ctx.snapshot.files);
+      return makeDimensionResult("comments", rawValue);
+    },
+  },
+  {
+    name: "cohesion",
+    compute(ctx) {
+      const rawValue = computeCohesion(
+        ctx.snapshot.importGraph.edges,
+        ctx.moduleAssignments,
+      );
+      return makeDimensionResult("cohesion", rawValue);
+    },
+  },
+  {
+    name: "entropy",
+    compute(ctx) {
+      const rawValue = computeEntropy(
+        ctx.snapshot.importGraph.edges,
+        ctx.moduleAssignments,
+      );
+      return makeDimensionResult("entropy", rawValue);
+    },
+  },
+  {
+    name: "distanceFromMainSeq",
+    compute(ctx) {
+      const rawValue = computeDistanceFromMainSeq(
+        ctx.snapshot.files,
+        ctx.fanMaps,
+        ctx.moduleAssignments,
+      );
+      return makeDimensionResult("distanceFromMainSeq", rawValue);
+    },
+  },
+  {
+    name: "attackSurface",
+    compute(ctx) {
+      const rawValue = computeAttackSurface(
+        ctx.snapshot.importGraph.adjacency,
+        ctx.entryPoints,
+        ctx.snapshot.totalFiles,
+      );
+      return makeDimensionResult("attackSurface", rawValue);
+    },
+  },
 ];
 
 // Validate that METRIC_COMPUTATIONS covers every DimensionName

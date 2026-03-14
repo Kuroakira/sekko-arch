@@ -1,5 +1,5 @@
-import type { FuncInfo } from "../types/index.js";
-import { COMPLEXITY_CC_THRESHOLD } from "../constants.js";
+import type { FuncInfo } from "../types/core.js";
+import { COMPLEXITY_CC_THRESHOLD } from "./thresholds.js";
 
 const ENTRY_POINT_PATTERNS = [/\/index\.tsx?$/, /\/main\.tsx?$/];
 

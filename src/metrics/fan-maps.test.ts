@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeFanMaps } from "./fan-maps.js";
-import type { ImportEdge } from "../types/index.js";
+import type { ImportEdge } from "../types/snapshot.js";
 
 describe("computeFanMaps", () => {
   it("returns empty maps for empty edges", () => {

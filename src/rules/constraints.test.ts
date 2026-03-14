@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { checkConstraints } from "./constraints.js";
-import type {
-  ConstraintsConfig,
-  DimensionGrades,
-} from "../types/index.js";
+import type { ConstraintsConfig } from "../types/rules.js";
+import type { DimensionGrades } from "../types/metrics.js";
 import { makeDimension, makeHealth } from "../testing/fixtures.js";
 
 function makeConstraintHealth(overrides: Partial<DimensionGrades> = {}) {

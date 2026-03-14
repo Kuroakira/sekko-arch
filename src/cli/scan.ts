@@ -1,10 +1,12 @@
 import { readFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
-import type { FileNode, Snapshot, HealthReport } from "../types/index.js";
+import type { FileNode } from "../types/core.js";
+import type { Snapshot } from "../types/snapshot.js";
+import type { HealthReport } from "../types/metrics.js";
 import { scanFiles } from "../scanner/index.js";
 import { parseAndExtract } from "../parser/index.js";
 import { buildImportGraph } from "../graph/index.js";
-import { computeHealth } from "../metrics/index.js";
+import { computeHealth } from "../metrics/health.js";
 import { getFormatter } from "./formatters/index.js";
 
 export interface PipelineResult {

@@ -1,10 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { checkRules } from "./index.js";
-import type {
-  RulesConfig,
-  HealthReport,
-  ImportEdge,
-} from "../types/index.js";
+import type { RulesConfig } from "../types/rules.js";
+import type { HealthReport } from "../types/metrics.js";
+import type { ImportEdge } from "../types/snapshot.js";
 import { makeDimension, makeHealth as makeSharedHealth } from "../testing/fixtures.js";
 
 function makeHealth(overrides: Partial<HealthReport> = {}) {

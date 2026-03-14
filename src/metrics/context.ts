@@ -1,4 +1,5 @@
-import type { Snapshot, FuncInfo } from "../types/index.js";
+import type { Snapshot } from "../types/snapshot.js";
+import type { FuncInfo } from "../types/core.js";
 import { computeFanMaps } from "./fan-maps.js";
 import type { FanMaps } from "./fan-maps.js";
 import { computeModuleAssignments } from "./module-boundary.js";

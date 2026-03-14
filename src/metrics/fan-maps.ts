@@ -1,4 +1,4 @@
-import type { ImportEdge } from "../types/index.js";
+import type { ImportEdge } from "../types/snapshot.js";
 
 export interface FanMaps {
   readonly fanIn: ReadonlyMap<string, number>;

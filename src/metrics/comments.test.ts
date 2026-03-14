@@ -3,8 +3,8 @@ import { computeCommentRawValue } from "./comments.js";
 import { makeFileNode } from "../testing/fixtures.js";
 
 describe("computeCommentRawValue", () => {
-  it("returns 1.0 for empty array (worst)", () => {
-    expect(computeCommentRawValue([])).toBe(1.0);
+  it("returns 0 for empty array (no files to analyze)", () => {
+    expect(computeCommentRawValue([])).toBe(0);
   });
 
   it("returns 0.92 for 8% comment ratio", () => {

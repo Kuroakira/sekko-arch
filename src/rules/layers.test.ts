@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { checkLayers } from "./layers.js";
-import type { LayerConfig, ImportEdge } from "../types/index.js";
+import type { LayerConfig } from "../types/rules.js";
+import type { ImportEdge } from "../types/snapshot.js";
 
 const controllersLayer: LayerConfig = {
   name: "controllers",

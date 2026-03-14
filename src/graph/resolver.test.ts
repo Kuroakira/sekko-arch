@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { resolveImports } from "./resolver.js";
-import type { ImportInfo } from "../types/index.js";
+import type { ImportInfo } from "../types/core.js";
 
 describe("resolveImports", () => {
   let tempDir: string;

@@ -1,5 +1,5 @@
-import type { FuncInfo } from "../types/index.js";
-import { COGNITIVE_COMPLEXITY_THRESHOLD } from "../constants.js";
+import type { FuncInfo } from "../types/core.js";
+import { COGNITIVE_COMPLEXITY_THRESHOLD } from "./thresholds.js";
 
 export function computeCognitiveComplexityRatio(
   functions: readonly FuncInfo[],

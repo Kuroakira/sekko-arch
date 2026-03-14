@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { buildImportGraph } from "./import-graph.js";
-import type { FileNode } from "../types/index.js";
+import type { FileNode } from "../types/core.js";
 import { makeFileNode, makeFileNodeWithImports } from "../testing/fixtures.js";
 
 describe("buildImportGraph", () => {

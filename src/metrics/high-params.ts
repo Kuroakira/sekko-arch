@@ -1,5 +1,5 @@
-import type { FuncInfo } from "../types/index.js";
-import { HIGH_PARAMS_THRESHOLD } from "../constants.js";
+import type { FuncInfo } from "../types/core.js";
+import { HIGH_PARAMS_THRESHOLD } from "./thresholds.js";
 
 export function computeHighParamsRatio(
   functions: readonly FuncInfo[],
