@@ -2,20 +2,11 @@ import { describe, it, expect } from "vitest";
 import { checkConstraints } from "./constraints.js";
 import type {
   ConstraintsConfig,
-  HealthReport,
   DimensionGrades,
-  DimensionResult,
 } from "../types/index.js";
+import { makeDimension, makeHealth } from "../testing/fixtures.js";
 
-function makeDimension(
-  name: DimensionResult["name"],
-  rawValue: number,
-  details?: Record<string, unknown>,
-): DimensionResult {
-  return { name, rawValue, grade: "A", details };
-}
-
-function makeHealth(overrides: Partial<DimensionGrades> = {}): HealthReport {
+function makeConstraintHealth(overrides: Partial<DimensionGrades> = {}) {
   const defaults: DimensionGrades = {
     cycles: makeDimension("cycles", 0),
     coupling: makeDimension("coupling", 0.3),
@@ -25,24 +16,23 @@ function makeHealth(overrides: Partial<DimensionGrades> = {}): HealthReport {
     levelization: makeDimension("levelization", 0.8),
     blastRadius: makeDimension("blastRadius", 0.1),
   };
-  return {
+  return makeHealth({
     dimensions: { ...defaults, ...overrides },
-    compositeGrade: "A",
     fileCount: 10,
     scanDurationMs: 100,
-  };
+  });
 }
 
 describe("checkConstraints", () => {
   it("returns no violations when constraints are empty", () => {
-    const result = checkConstraints({}, makeHealth());
+    const result = checkConstraints({}, makeConstraintHealth());
     expect(result).toEqual([]);
   });
 
   describe("max_cycles", () => {
     it("passes when cycle count is within limit", () => {
       const constraints: ConstraintsConfig = { max_cycles: 2 };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         cycles: makeDimension("cycles", 2),
       });
       const result = checkConstraints(constraints, health);
@@ -51,7 +41,7 @@ describe("checkConstraints", () => {
 
     it("fails when cycle count exceeds limit", () => {
       const constraints: ConstraintsConfig = { max_cycles: 1 };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         cycles: makeDimension("cycles", 3),
       });
       const result = checkConstraints(constraints, health);
@@ -67,7 +57,7 @@ describe("checkConstraints", () => {
   describe("max_coupling", () => {
     it("passes when coupling is within limit", () => {
       const constraints: ConstraintsConfig = { max_coupling: 0.5 };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         coupling: makeDimension("coupling", 0.5),
       });
       const result = checkConstraints(constraints, health);
@@ -76,7 +66,7 @@ describe("checkConstraints", () => {
 
     it("fails when coupling exceeds limit", () => {
       const constraints: ConstraintsConfig = { max_coupling: 0.4 };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         coupling: makeDimension("coupling", 0.6),
       });
       const result = checkConstraints(constraints, health);
@@ -92,8 +82,8 @@ describe("checkConstraints", () => {
   describe("max_cc", () => {
     it("passes when no functions exceed CC limit", () => {
       const constraints: ConstraintsConfig = { max_cc: 10 };
-      const health = makeHealth({
-        complexFn: makeDimension("complexFn", 2, {
+      const health = makeConstraintHealth({
+        complexFn: makeDimension("complexFn", 2, "A", {
           complexFunctions: [
             { name: "foo", file: "a.ts", cc: 8 },
             { name: "bar", file: "b.ts", cc: 10 },
@@ -106,8 +96,8 @@ describe("checkConstraints", () => {
 
     it("fails when functions exceed CC limit", () => {
       const constraints: ConstraintsConfig = { max_cc: 10 };
-      const health = makeHealth({
-        complexFn: makeDimension("complexFn", 3, {
+      const health = makeConstraintHealth({
+        complexFn: makeDimension("complexFn", 3, "A", {
           complexFunctions: [
             { name: "foo", file: "a.ts", cc: 8 },
             { name: "bar", file: "b.ts", cc: 15 },
@@ -128,7 +118,7 @@ describe("checkConstraints", () => {
 
     it("falls back to rawValue when details unavailable", () => {
       const constraints: ConstraintsConfig = { max_cc: 10 };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         complexFn: makeDimension("complexFn", 3),
       });
       const result = checkConstraints(constraints, health);
@@ -143,8 +133,8 @@ describe("checkConstraints", () => {
   describe("no_god_files", () => {
     it("passes when no god files exist", () => {
       const constraints: ConstraintsConfig = { no_god_files: true };
-      const health = makeHealth({
-        godFiles: makeDimension("godFiles", 0, { godFiles: [] }),
+      const health = makeConstraintHealth({
+        godFiles: makeDimension("godFiles", 0, "A", { godFiles: [] }),
       });
       const result = checkConstraints(constraints, health);
       expect(result).toEqual([]);
@@ -152,8 +142,8 @@ describe("checkConstraints", () => {
 
     it("fails when god files exist", () => {
       const constraints: ConstraintsConfig = { no_god_files: true };
-      const health = makeHealth({
-        godFiles: makeDimension("godFiles", 2, {
+      const health = makeConstraintHealth({
+        godFiles: makeDimension("godFiles", 2, "A", {
           godFiles: ["src/big.ts", "src/huge.ts"],
         }),
       });
@@ -168,7 +158,7 @@ describe("checkConstraints", () => {
 
     it("falls back to rawValue when details unavailable", () => {
       const constraints: ConstraintsConfig = { no_god_files: true };
-      const health = makeHealth({
+      const health = makeConstraintHealth({
         godFiles: makeDimension("godFiles", 2),
       });
       const result = checkConstraints(constraints, health);
@@ -181,8 +171,8 @@ describe("checkConstraints", () => {
 
     it("does not check when no_god_files is false", () => {
       const constraints: ConstraintsConfig = { no_god_files: false };
-      const health = makeHealth({
-        godFiles: makeDimension("godFiles", 2, {
+      const health = makeConstraintHealth({
+        godFiles: makeDimension("godFiles", 2, "A", {
           godFiles: ["src/big.ts"],
         }),
       });

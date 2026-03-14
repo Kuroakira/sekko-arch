@@ -10,6 +10,35 @@ interface ComplexFunction {
   readonly cc: number;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isComplexFunction(value: unknown): value is ComplexFunction {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value["name"] === "string" &&
+    typeof value["file"] === "string" &&
+    typeof value["cc"] === "number"
+  );
+}
+
+function parseComplexFunctions(
+  details: Record<string, unknown> | undefined,
+): readonly ComplexFunction[] {
+  const raw = details?.complexFunctions;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isComplexFunction);
+}
+
+function parseGodFiles(
+  details: Record<string, unknown> | undefined,
+): readonly string[] {
+  const raw = details?.godFiles;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((item): item is string => typeof item === "string");
+}
+
 export function checkConstraints(
   constraints: ConstraintsConfig,
   health: HealthReport,
@@ -41,12 +70,10 @@ export function checkConstraints(
   }
 
   if (constraints.max_cc !== undefined) {
-    const details = health.dimensions.complexFn.details;
-    const complexFunctions = details?.complexFunctions as
-      | readonly ComplexFunction[]
-      | undefined;
+    const complexFnDetails = health.dimensions.complexFn.details;
+    const complexFunctions = parseComplexFunctions(complexFnDetails);
 
-    if (complexFunctions) {
+    if (complexFnDetails !== undefined) {
       const maxCc = constraints.max_cc;
       const exceeding = complexFunctions.filter(
         (fn) => fn.cc > maxCc,
@@ -70,10 +97,10 @@ export function checkConstraints(
   }
 
   if (constraints.no_god_files === true) {
-    const details = health.dimensions.godFiles.details;
-    const godFiles = details?.godFiles as readonly string[] | undefined;
+    const godFileDetails = health.dimensions.godFiles.details;
+    const godFiles = parseGodFiles(godFileDetails);
 
-    if (godFiles) {
+    if (godFileDetails !== undefined) {
       if (godFiles.length > 0) {
         violations.push({
           rule: "no_god_files",

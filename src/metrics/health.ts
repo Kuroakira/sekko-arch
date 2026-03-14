@@ -16,9 +16,11 @@ import { detectGodFiles } from "./god-files.js";
 import { computeComplexFnRatio, detectEntryPoints } from "./complex-fns.js";
 import { computeLevelization } from "./levelization.js";
 import { computeBlastRadius } from "./blast-radius.js";
-
-const STABLE_INSTABILITY_THRESHOLD = 0.15;
-const STABLE_FAN_IN_THRESHOLD = 3;
+import {
+  STABILITY_INSTABILITY_THRESHOLD,
+  STABILITY_FAN_IN_THRESHOLD,
+  COMPLEXITY_CC_THRESHOLD,
+} from "../constants.js";
 
 const BARREL_FILE_PATTERN = /\/index\.tsx?$/;
 
@@ -30,14 +32,14 @@ function isFoundationFile(
   if (BARREL_FILE_PATTERN.test(file)) return true;
 
   const fi = fanIn.get(file) ?? 0;
-  if (fi < STABLE_FAN_IN_THRESHOLD) return false;
+  if (fi < STABILITY_FAN_IN_THRESHOLD) return false;
 
   const fo = fanOut.get(file) ?? 0;
   const total = fi + fo;
   if (total === 0) return true;
 
   const instability = fo / total;
-  return instability <= STABLE_INSTABILITY_THRESHOLD;
+  return instability <= STABILITY_INSTABILITY_THRESHOLD;
 }
 
 function collectAllFunctions(snapshot: Snapshot): readonly FuncInfo[] {
@@ -131,7 +133,9 @@ export function computeHealth(snapshot: Snapshot): HealthReport {
     }),
     complexFn: makeDimensionResult("complexFn", complexFnRatio, {
       totalFunctions: allFunctions.length,
-      complexCount: allFunctions.filter((fn) => fn.cc > 15).length,
+      complexCount: allFunctions.filter(
+        (fn) => fn.cc > COMPLEXITY_CC_THRESHOLD,
+      ).length,
     }),
     levelization: makeDimensionResult(
       "levelization",

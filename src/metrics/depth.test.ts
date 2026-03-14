@@ -1,17 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeMaxDepth } from "./depth.js";
-
-function makeAdj(
-  edges: [string, string][],
-): ReadonlyMap<string, readonly string[]> {
-  const adj = new Map<string, string[]>();
-  for (const [from, to] of edges) {
-    if (!adj.has(from)) adj.set(from, []);
-    if (!adj.has(to)) adj.set(to, []);
-    adj.get(from)?.push(to);
-  }
-  return adj;
-}
+import { makeAdj } from "../testing/fixtures.js";
 
 describe("computeMaxDepth", () => {
   it("returns 0 for empty graph", () => {

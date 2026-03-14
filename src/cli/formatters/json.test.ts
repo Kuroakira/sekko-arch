@@ -1,46 +1,16 @@
 import { describe, it, expect } from "vitest";
-import type {
-  DimensionName,
-  DimensionResult,
-  Grade,
-  HealthReport,
-} from "../../types/metrics.js";
+import type { DimensionName, HealthReport } from "../../types/metrics.js";
 import { formatJson } from "./json.js";
-
-function makeDim(
-  name: DimensionName,
-  rawValue: number,
-  grade: Grade
-): DimensionResult {
-  return { name, rawValue, grade };
-}
-
-function makeReport(overrides?: Partial<HealthReport>): HealthReport {
-  return {
-    dimensions: {
-      cycles: makeDim("cycles", 0, "A"),
-      coupling: makeDim("coupling", 0.15, "A"),
-      depth: makeDim("depth", 3, "A"),
-      godFiles: makeDim("godFiles", 0, "A"),
-      complexFn: makeDim("complexFn", 0.02, "A"),
-      levelization: makeDim("levelization", 0, "A"),
-      blastRadius: makeDim("blastRadius", 0.08, "A"),
-    },
-    compositeGrade: "A",
-    fileCount: 42,
-    scanDurationMs: 150,
-    ...overrides,
-  };
-}
+import { makeHealth } from "../../testing/fixtures.js";
 
 describe("formatJson", () => {
   it("returns valid JSON", () => {
-    const result = formatJson(makeReport());
+    const result = formatJson(makeHealth());
     expect(() => JSON.parse(result)).not.toThrow();
   });
 
   it("includes all 7 dimensions with rawValue and grade", () => {
-    const report = makeReport();
+    const report = makeHealth();
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
     const dimensions = parsed["dimensions"] as Record<
       string,
@@ -67,14 +37,14 @@ describe("formatJson", () => {
   });
 
   it("includes compositeGrade", () => {
-    const report = makeReport({ compositeGrade: "C" });
+    const report = makeHealth({ compositeGrade: "C" });
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
 
     expect(parsed["compositeGrade"]).toBe("C");
   });
 
   it("includes metadata with fileCount and scanDurationMs", () => {
-    const report = makeReport({ fileCount: 99, scanDurationMs: 500 });
+    const report = makeHealth({ fileCount: 99, scanDurationMs: 500 });
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
     const metadata = parsed["metadata"] as Record<string, unknown>;
 
@@ -83,7 +53,7 @@ describe("formatJson", () => {
   });
 
   it("uses 2-space indentation", () => {
-    const result = formatJson(makeReport());
+    const result = formatJson(makeHealth());
     const lines = result.split("\n");
 
     expect(lines[0]).toBe("{");
@@ -91,7 +61,7 @@ describe("formatJson", () => {
   });
 
   it("preserves numeric precision for rawValues", () => {
-    const report = makeReport();
+    const report = makeHealth();
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
     const dimensions = parsed["dimensions"] as Record<
       string,
@@ -103,7 +73,7 @@ describe("formatJson", () => {
   });
 
   it("does not include dimension details in output", () => {
-    const report = makeReport();
+    const report = makeHealth();
     const reportWithDetails: HealthReport = {
       ...report,
       dimensions: {
@@ -128,7 +98,7 @@ describe("formatJson", () => {
   });
 
   it("only contains dimensions, compositeGrade, and metadata keys at top level", () => {
-    const parsed = JSON.parse(formatJson(makeReport())) as Record<
+    const parsed = JSON.parse(formatJson(makeHealth())) as Record<
       string,
       unknown
     >;

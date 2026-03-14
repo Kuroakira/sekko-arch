@@ -1,24 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseAndExtract } from "./index.js";
-import type { FileNode } from "../types/core.js";
-
-function makeFileNode(
-  overrides: Partial<FileNode> = {},
-): FileNode {
-  return {
-    path: "src/example.ts",
-    name: "example.ts",
-    isDir: false,
-    lines: 10,
-    logic: 8,
-    comments: 1,
-    blanks: 1,
-    funcs: 0,
-    lang: "ts",
-    sa: undefined,
-    ...overrides,
-  };
-}
+import { makeFileNode } from "../testing/fixtures.js";
 
 describe("parseAndExtract", () => {
   it("populates StructuralAnalysis with functions, classes, and imports", () => {

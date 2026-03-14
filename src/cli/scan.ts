@@ -5,8 +5,7 @@ import { scanFiles } from "../scanner/index.js";
 import { parseAndExtract } from "../parser/index.js";
 import { buildImportGraph } from "../graph/index.js";
 import { computeHealth } from "../metrics/index.js";
-import { formatTable } from "./formatters/table.js";
-import { formatJson } from "./formatters/json.js";
+import { getFormatter } from "./formatters/index.js";
 
 export interface PipelineResult {
   readonly snapshot: Snapshot;
@@ -55,8 +54,7 @@ export function runScan(
   const absolutePath = resolve(path);
   const { health } = executePipeline(absolutePath);
 
-  const output =
-    options.format === "json" ? formatJson(health) : formatTable(health);
+  const output = getFormatter(options.format).format(health);
 
   console.log(output);
 }

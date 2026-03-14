@@ -5,26 +5,18 @@ import { tmpdir } from "node:os";
 import type {
   HealthReport,
   DimensionGrades,
-  DimensionName,
   Grade,
 } from "../types/index.js";
+import { makeDimension, makeFileNode } from "../testing/fixtures.js";
 
-function makeDimension(
-  name: DimensionName,
-  rawValue: number,
-  grade: Grade,
-) {
-  return { name, rawValue, grade };
-}
-
-function makeHealth(overrides?: {
+function makeGateHealth(overrides?: {
   coupling?: number;
-  couplingGrade?: "A" | "B" | "C" | "D" | "F";
+  couplingGrade?: Grade;
   cycles?: number;
   godFiles?: number;
   complexFn?: number;
   depth?: number;
-  compositeGrade?: "A" | "B" | "C" | "D" | "F";
+  compositeGrade?: Grade;
 }): HealthReport {
   const o = overrides ?? {};
   const dimensions: DimensionGrades = {
@@ -60,18 +52,7 @@ const mockExecutePipeline = vi.mocked(executePipeline);
 function makePipelineResult(health: HealthReport): PipelineResult {
   return {
     snapshot: {
-      root: {
-        path: "/fake",
-        name: "fake",
-        isDir: true,
-        lines: 0,
-        logic: 0,
-        comments: 0,
-        blanks: 0,
-        funcs: 0,
-        lang: "ts",
-        sa: undefined,
-      },
+      root: makeFileNode({ path: "/fake", name: "fake", isDir: true, lines: 0, logic: 0, comments: 0, blanks: 0, funcs: 0 }),
       files: [],
       totalFiles: 0,
       totalLines: 0,
@@ -94,7 +75,7 @@ describe("saveBaseline", () => {
   });
 
   it("creates .archana/baseline.json with correct structure", () => {
-    const health = makeHealth({
+    const health = makeGateHealth({
       coupling: 0.15,
       cycles: 2,
       godFiles: 1,
@@ -134,8 +115,8 @@ describe("compareBaseline", () => {
     vi.restoreAllMocks();
   });
 
-  function writeBaseline(overrides?: Parameters<typeof makeHealth>[0]): void {
-    const health = makeHealth(overrides);
+  function writeBaseline(overrides?: Parameters<typeof makeGateHealth>[0]): void {
+    const health = makeGateHealth(overrides);
     const baseline: Baseline = {
       couplingScore: health.dimensions.coupling.rawValue,
       cycleCount: health.dimensions.cycles.rawValue,
@@ -160,7 +141,7 @@ describe("compareBaseline", () => {
 
   it("passes when metrics have not degraded", () => {
     writeBaseline({ coupling: 0.15, cycles: 2, godFiles: 1, complexFn: 3, depth: 5 });
-    const health = makeHealth({ coupling: 0.15, cycles: 2, godFiles: 1, complexFn: 3, depth: 5 });
+    const health = makeGateHealth({ coupling: 0.15, cycles: 2, godFiles: 1, complexFn: 3, depth: 5 });
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     const result = compareBaseline(tmpDir);
@@ -171,7 +152,7 @@ describe("compareBaseline", () => {
 
   it("detects coupling degradation when exceeding baseline + 0.05", () => {
     writeBaseline({ coupling: 0.15 });
-    const health = makeHealth({ coupling: 0.21 });
+    const health = makeGateHealth({ coupling: 0.21 });
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     const result = compareBaseline(tmpDir);
@@ -184,7 +165,7 @@ describe("compareBaseline", () => {
 
   it("does not flag coupling within threshold", () => {
     writeBaseline({ coupling: 0.15 });
-    const health = makeHealth({ coupling: 0.19 });
+    const health = makeGateHealth({ coupling: 0.19 });
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     const result = compareBaseline(tmpDir);
@@ -195,7 +176,7 @@ describe("compareBaseline", () => {
 
   it("detects cycle count increase", () => {
     writeBaseline({ cycles: 2 });
-    const health = makeHealth({ cycles: 3 });
+    const health = makeGateHealth({ cycles: 3 });
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     const result = compareBaseline(tmpDir);
@@ -207,7 +188,7 @@ describe("compareBaseline", () => {
 
   it("detects grade drop", () => {
     writeBaseline({ compositeGrade: "B" });
-    const health = makeHealth({ compositeGrade: "C" });
+    const health = makeGateHealth({ compositeGrade: "C" });
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     const result = compareBaseline(tmpDir);
@@ -218,9 +199,90 @@ describe("compareBaseline", () => {
   });
 
   it("fails when no baseline exists", () => {
-    const health = makeHealth();
+    const health = makeGateHealth();
     mockExecutePipeline.mockReturnValue(makePipelineResult(health));
 
     expect(() => compareBaseline(tmpDir)).toThrow(/baseline/i);
+  });
+
+  it("throws descriptive error when baseline file contains invalid JSON", () => {
+    const dir = join(tmpDir, ".archana");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "baseline.json"), "not valid json {{{");
+
+    expect(() => compareBaseline(tmpDir)).toThrow(
+      /failed to parse.*baseline\.json.*invalid JSON/i,
+    );
+  });
+
+  it("throws descriptive error when baseline file has wrong shape", () => {
+    const dir = join(tmpDir, ".archana");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "baseline.json"),
+      JSON.stringify({ someUnrelatedField: 42 }),
+    );
+
+    expect(() => compareBaseline(tmpDir)).toThrow(
+      /invalid baseline.*does not match expected schema/i,
+    );
+  });
+
+  it("throws descriptive error when baseline has wrong field types", () => {
+    const dir = join(tmpDir, ".archana");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "baseline.json"),
+      JSON.stringify({
+        couplingScore: "not-a-number",
+        cycleCount: 0,
+        godFileCount: 0,
+        complexFnCount: 0,
+        maxDepth: 0,
+        compositeGrade: "A",
+        dimensionGrades: {
+          cycles: "A",
+          coupling: "A",
+          depth: "A",
+          godFiles: "A",
+          complexFn: "A",
+          levelization: "A",
+          blastRadius: "A",
+        },
+      }),
+    );
+
+    expect(() => compareBaseline(tmpDir)).toThrow(
+      /invalid baseline.*does not match expected schema/i,
+    );
+  });
+
+  it("throws descriptive error when dimensionGrades is missing a field", () => {
+    const dir = join(tmpDir, ".archana");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "baseline.json"),
+      JSON.stringify({
+        couplingScore: 0.1,
+        cycleCount: 0,
+        godFileCount: 0,
+        complexFnCount: 0,
+        maxDepth: 3,
+        compositeGrade: "A",
+        dimensionGrades: {
+          cycles: "A",
+          coupling: "A",
+          // depth missing
+          godFiles: "A",
+          complexFn: "A",
+          levelization: "A",
+          blastRadius: "A",
+        },
+      }),
+    );
+
+    expect(() => compareBaseline(tmpDir)).toThrow(
+      /invalid baseline.*does not match expected schema/i,
+    );
   });
 });

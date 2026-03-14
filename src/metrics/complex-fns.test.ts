@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { computeComplexFnRatio, detectEntryPoints } from "./complex-fns.js";
-import type { FuncInfo } from "../types/index.js";
+import { makeFuncInfo } from "../testing/fixtures.js";
 
-function makeFn(name: string, cc: number): FuncInfo {
-  return { name, startLine: 1, endLine: 10, lineCount: 10, cc, paramCount: 1 };
+function makeFn(name: string, cc: number) {
+  return makeFuncInfo({ name, cc });
 }
 
 describe("computeComplexFnRatio", () => {

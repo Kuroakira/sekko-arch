@@ -1,10 +1,10 @@
+import { GOD_FILE_FAN_OUT_THRESHOLD } from "../constants.js";
+
 export interface GodFilesResult {
   readonly godFiles: readonly string[];
   readonly count: number;
   readonly ratio: number;
 }
-
-const GOD_FILE_THRESHOLD = 15;
 
 export function detectGodFiles(
   fanOut: ReadonlyMap<string, number>,
@@ -13,7 +13,7 @@ export function detectGodFiles(
   const godFiles: string[] = [];
 
   for (const [file, count] of fanOut) {
-    if (count > GOD_FILE_THRESHOLD && !entryPoints.has(file)) {
+    if (count > GOD_FILE_FAN_OUT_THRESHOLD && !entryPoints.has(file)) {
       godFiles.push(file);
     }
   }

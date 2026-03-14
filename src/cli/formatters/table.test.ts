@@ -1,54 +1,23 @@
 import { describe, it, expect } from "vitest";
 import { formatTable } from "./table.js";
-import type {
-  HealthReport,
-  DimensionName,
-  DimensionResult,
-  Grade,
-} from "../../types/metrics.js";
-
-function makeDim(
-  name: DimensionName,
-  rawValue: number,
-  grade: Grade
-): DimensionResult {
-  return { name, rawValue, grade };
-}
-
-function makeReport(overrides?: Partial<HealthReport>): HealthReport {
-  return {
-    dimensions: {
-      cycles: makeDim("cycles", 0, "A"),
-      coupling: makeDim("coupling", 0.15, "A"),
-      depth: makeDim("depth", 3, "A"),
-      godFiles: makeDim("godFiles", 0, "A"),
-      complexFn: makeDim("complexFn", 0.02, "A"),
-      levelization: makeDim("levelization", 0, "A"),
-      blastRadius: makeDim("blastRadius", 0.08, "A"),
-    },
-    compositeGrade: "A",
-    fileCount: 42,
-    scanDurationMs: 150,
-    ...overrides,
-  };
-}
+import { makeDimension, makeHealth } from "../../testing/fixtures.js";
 
 describe("formatTable", () => {
   it("includes the report header", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     expect(output).toContain("archana");
     expect(output).toContain("Architecture Health Report");
   });
 
   it("includes column headers", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     expect(output).toContain("Dimension");
     expect(output).toContain("Value");
     expect(output).toContain("Grade");
   });
 
   it("displays all 7 dimensions with human-readable names", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     expect(output).toContain("Cycles");
     expect(output).toContain("Coupling");
     expect(output).toContain("Depth");
@@ -59,7 +28,7 @@ describe("formatTable", () => {
   });
 
   it("formats integer dimensions without decimal places", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     const cyclesLine = output.split("\n").find((l) => l.includes("Cycles"));
     expect(cyclesLine).toBeDefined();
     expect(cyclesLine).toContain("0");
@@ -72,7 +41,7 @@ describe("formatTable", () => {
   });
 
   it("formats ratio dimensions with 2 decimal places", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     const couplingLine = output.split("\n").find((l) => l.includes("Coupling"));
     expect(couplingLine).toContain("0.15");
 
@@ -83,15 +52,15 @@ describe("formatTable", () => {
   });
 
   it("shows each dimension grade", () => {
-    const report = makeReport({
+    const report = makeHealth({
       dimensions: {
-        cycles: makeDim("cycles", 3, "D"),
-        coupling: makeDim("coupling", 0.5, "C"),
-        depth: makeDim("depth", 8, "F"),
-        godFiles: makeDim("godFiles", 0, "A"),
-        complexFn: makeDim("complexFn", 0.02, "A"),
-        levelization: makeDim("levelization", 0.1, "B"),
-        blastRadius: makeDim("blastRadius", 0.3, "C"),
+        cycles: makeDimension("cycles", 3, "D"),
+        coupling: makeDimension("coupling", 0.5, "C"),
+        depth: makeDimension("depth", 8, "F"),
+        godFiles: makeDimension("godFiles", 0, "A"),
+        complexFn: makeDimension("complexFn", 0.02, "A"),
+        levelization: makeDimension("levelization", 0.1, "B"),
+        blastRadius: makeDimension("blastRadius", 0.3, "C"),
       },
       compositeGrade: "C",
     });
@@ -104,7 +73,7 @@ describe("formatTable", () => {
   });
 
   it("shows composite grade separated from dimensions", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     expect(output).toContain("Composite");
     const compositeLine = output
       .split("\n")
@@ -113,20 +82,20 @@ describe("formatTable", () => {
   });
 
   it("includes file count and scan duration in summary", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     expect(output).toContain("42 files scanned in 150ms");
   });
 
   it("handles large numbers", () => {
-    const report = makeReport({
+    const report = makeHealth({
       dimensions: {
-        cycles: makeDim("cycles", 100, "F"),
-        coupling: makeDim("coupling", 0.99, "F"),
-        depth: makeDim("depth", 25, "F"),
-        godFiles: makeDim("godFiles", 12.5, "F"),
-        complexFn: makeDim("complexFn", 0.55, "F"),
-        levelization: makeDim("levelization", 0.88, "F"),
-        blastRadius: makeDim("blastRadius", 0.95, "F"),
+        cycles: makeDimension("cycles", 100, "F"),
+        coupling: makeDimension("coupling", 0.99, "F"),
+        depth: makeDimension("depth", 25, "F"),
+        godFiles: makeDimension("godFiles", 12.5, "F"),
+        complexFn: makeDimension("complexFn", 0.55, "F"),
+        levelization: makeDimension("levelization", 0.88, "F"),
+        blastRadius: makeDimension("blastRadius", 0.95, "F"),
       },
       compositeGrade: "F",
       fileCount: 10000,
@@ -139,15 +108,15 @@ describe("formatTable", () => {
   });
 
   it("handles zero values", () => {
-    const report = makeReport({
+    const report = makeHealth({
       dimensions: {
-        cycles: makeDim("cycles", 0, "A"),
-        coupling: makeDim("coupling", 0, "A"),
-        depth: makeDim("depth", 0, "A"),
-        godFiles: makeDim("godFiles", 0, "A"),
-        complexFn: makeDim("complexFn", 0, "A"),
-        levelization: makeDim("levelization", 0, "A"),
-        blastRadius: makeDim("blastRadius", 0, "A"),
+        cycles: makeDimension("cycles", 0, "A"),
+        coupling: makeDimension("coupling", 0, "A"),
+        depth: makeDimension("depth", 0, "A"),
+        godFiles: makeDimension("godFiles", 0, "A"),
+        complexFn: makeDimension("complexFn", 0, "A"),
+        levelization: makeDimension("levelization", 0, "A"),
+        blastRadius: makeDimension("blastRadius", 0, "A"),
       },
       compositeGrade: "A",
       fileCount: 0,
@@ -158,7 +127,7 @@ describe("formatTable", () => {
   });
 
   it("produces aligned columns", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     const lines = output.split("\n").filter((l) => l.trim().length > 0);
     const dimensionLines = lines.filter(
       (l) =>
@@ -177,7 +146,7 @@ describe("formatTable", () => {
   });
 
   it("includes separator lines", () => {
-    const output = formatTable(makeReport());
+    const output = formatTable(makeHealth());
     const separatorLines = output
       .split("\n")
       .filter((l) => l.includes("\u2500"));

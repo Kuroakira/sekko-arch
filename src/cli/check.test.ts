@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { HealthReport, ImportEdge } from "../types/index.js";
+import type { ImportEdge } from "../types/index.js";
+import { makeDimension, makeHealth } from "../testing/fixtures.js";
 
 vi.mock("./scan.js", () => ({
   executePipeline: vi.fn(),
@@ -18,26 +19,20 @@ const mockExecutePipeline = vi.mocked(executePipeline);
 const mockParseRulesFile = vi.mocked(parseRulesFile);
 const mockCheckRules = vi.mocked(checkRules);
 
-function makeMockHealth(): HealthReport {
-  const dim = (name: string) => ({
-    name: name as never,
-    rawValue: 0,
-    grade: "A" as const,
-  });
-  return {
+function makeMockHealth() {
+  return makeHealth({
     dimensions: {
-      cycles: dim("cycles"),
-      coupling: dim("coupling"),
-      depth: dim("depth"),
-      godFiles: dim("godFiles"),
-      complexFn: dim("complexFn"),
-      levelization: dim("levelization"),
-      blastRadius: dim("blastRadius"),
+      cycles: makeDimension("cycles", 0, "A"),
+      coupling: makeDimension("coupling", 0, "A"),
+      depth: makeDimension("depth", 0, "A"),
+      godFiles: makeDimension("godFiles", 0, "A"),
+      complexFn: makeDimension("complexFn", 0, "A"),
+      levelization: makeDimension("levelization", 0, "A"),
+      blastRadius: makeDimension("blastRadius", 0, "A"),
     },
-    compositeGrade: "A",
     fileCount: 10,
     scanDurationMs: 50,
-  };
+  });
 }
 
 const mockEdges: readonly ImportEdge[] = [

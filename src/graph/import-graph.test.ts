@@ -4,28 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { buildImportGraph } from "./import-graph.js";
 import type { FileNode } from "../types/index.js";
-
-function makeFileNode(
-  path: string,
-  imports: { specifier: string; resolved: string | null }[],
-): FileNode {
-  return {
-    path,
-    name: path.split("/").pop() ?? path,
-    isDir: false,
-    lines: 10,
-    logic: 8,
-    comments: 1,
-    blanks: 1,
-    funcs: 1,
-    lang: "ts",
-    sa: {
-      functions: [],
-      classes: [],
-      imports,
-    },
-  };
-}
+import { makeFileNode, makeFileNodeWithImports } from "../testing/fixtures.js";
 
 describe("buildImportGraph", () => {
   let tempDir: string;
@@ -46,10 +25,10 @@ describe("buildImportGraph", () => {
 
   it("builds edges from resolved imports", () => {
     const files: FileNode[] = [
-      makeFileNode("src/auth/signup.ts", [
+      makeFileNodeWithImports("src/auth/signup.ts", [
         { specifier: "./login.js", resolved: null },
       ]),
-      makeFileNode("src/auth/login.ts", []),
+      makeFileNodeWithImports("src/auth/login.ts", []),
     ];
 
     const graph = buildImportGraph(files, tempDir);
@@ -63,10 +42,10 @@ describe("buildImportGraph", () => {
 
   it("builds adjacency and reverse adjacency", () => {
     const files: FileNode[] = [
-      makeFileNode("src/auth/signup.ts", [
+      makeFileNodeWithImports("src/auth/signup.ts", [
         { specifier: "./login.js", resolved: null },
       ]),
-      makeFileNode("src/auth/login.ts", []),
+      makeFileNodeWithImports("src/auth/login.ts", []),
     ];
 
     const graph = buildImportGraph(files, tempDir);
@@ -77,7 +56,7 @@ describe("buildImportGraph", () => {
 
   it("excludes self-edges", () => {
     const files: FileNode[] = [
-      makeFileNode("src/index.ts", [
+      makeFileNodeWithImports("src/index.ts", [
         { specifier: "./index.js", resolved: null },
       ]),
     ];
@@ -91,11 +70,11 @@ describe("buildImportGraph", () => {
 
   it("deduplicates edges", () => {
     const files: FileNode[] = [
-      makeFileNode("src/auth/signup.ts", [
+      makeFileNodeWithImports("src/auth/signup.ts", [
         { specifier: "./login.js", resolved: null },
         { specifier: "./login.js", resolved: null },
       ]),
-      makeFileNode("src/auth/login.ts", []),
+      makeFileNodeWithImports("src/auth/login.ts", []),
     ];
 
     const graph = buildImportGraph(files, tempDir);
@@ -106,18 +85,7 @@ describe("buildImportGraph", () => {
   });
 
   it("skips files without structural analysis", () => {
-    const file: FileNode = {
-      path: "src/broken.ts",
-      name: "broken.ts",
-      isDir: false,
-      lines: 10,
-      logic: 8,
-      comments: 1,
-      blanks: 1,
-      funcs: 0,
-      lang: "ts",
-      sa: undefined,
-    };
+    const file = makeFileNode({ path: "src/broken.ts" });
 
     const graph = buildImportGraph([file], tempDir);
     expect(graph.edges).toHaveLength(0);

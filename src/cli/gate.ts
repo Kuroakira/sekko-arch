@@ -21,6 +21,52 @@ export interface Baseline {
   };
 }
 
+const VALID_GRADES: ReadonlySet<string> = new Set(["A", "B", "C", "D", "F"]);
+
+function isGrade(value: unknown): value is Grade {
+  return typeof value === "string" && VALID_GRADES.has(value);
+}
+
+function isBaseline(value: unknown): value is Baseline {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const obj = value as Record<string, unknown>;
+
+  if (
+    typeof obj["couplingScore"] !== "number" ||
+    typeof obj["cycleCount"] !== "number" ||
+    typeof obj["godFileCount"] !== "number" ||
+    typeof obj["complexFnCount"] !== "number" ||
+    typeof obj["maxDepth"] !== "number"
+  ) {
+    return false;
+  }
+
+  if (!isGrade(obj["compositeGrade"])) {
+    return false;
+  }
+
+  const dg = obj["dimensionGrades"];
+  if (typeof dg !== "object" || dg === null) {
+    return false;
+  }
+
+  const grades = dg as Record<string, unknown>;
+  const requiredDimensions = [
+    "cycles",
+    "coupling",
+    "depth",
+    "godFiles",
+    "complexFn",
+    "levelization",
+    "blastRadius",
+  ];
+
+  return requiredDimensions.every((key) => isGrade(grades[key]));
+}
+
 const GRADE_ORDER: readonly Grade[] = ["A", "B", "C", "D", "F"];
 
 function gradeIndex(grade: Grade): number {
@@ -77,7 +123,23 @@ export function compareBaseline(rootDir: string): {
   }
 
   const raw = readFileSync(filePath, "utf-8");
-  const baseline: Baseline = JSON.parse(raw);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch {
+    throw new Error(
+      `Failed to parse baseline.json: invalid JSON. Delete the file and re-run with --save.`,
+    );
+  }
+
+  if (!isBaseline(parsed)) {
+    throw new Error(
+      `Invalid baseline: file does not match expected schema. Delete the file and re-run with --save.`,
+    );
+  }
+
+  const baseline = parsed;
   const { health } = executePipeline(resolve(rootDir));
   const current = extractBaseline(health);
 

@@ -5,18 +5,10 @@ import type {
   HealthReport,
   ImportEdge,
 } from "../types/index.js";
+import { makeDimension, makeHealth as makeSharedHealth } from "../testing/fixtures.js";
 
-function makeDimension(
-  name: string,
-  rawValue: number,
-  grade: "A" | "B" | "C" | "D" | "F" = "A",
-  details?: Record<string, unknown>,
-) {
-  return { name: name as never, rawValue, grade, details };
-}
-
-function makeHealth(overrides: Partial<HealthReport> = {}): HealthReport {
-  return {
+function makeHealth(overrides: Partial<HealthReport> = {}) {
+  return makeSharedHealth({
     dimensions: {
       cycles: makeDimension("cycles", 0),
       coupling: makeDimension("coupling", 0.1),
@@ -26,11 +18,10 @@ function makeHealth(overrides: Partial<HealthReport> = {}): HealthReport {
       levelization: makeDimension("levelization", 0),
       blastRadius: makeDimension("blastRadius", 0.1),
     },
-    compositeGrade: "A",
     fileCount: 10,
     scanDurationMs: 100,
     ...overrides,
-  };
+  });
 }
 
 describe("checkRules", () => {

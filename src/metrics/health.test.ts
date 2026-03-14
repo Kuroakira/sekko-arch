@@ -1,54 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { computeHealth } from "./health.js";
-import type { Snapshot, FileNode, ImportEdge } from "../types/index.js";
+import type { FileNode, ImportEdge } from "../types/index.js";
+import { makeFileNode, makeSnapshot } from "../testing/fixtures.js";
 
 function makeFile(
   path: string,
   overrides?: Partial<Pick<FileNode, "sa" | "lines">>,
-): FileNode {
-  const name = path.split("/").pop() ?? path;
-  return {
+) {
+  return makeFileNode({
     path,
-    name,
-    isDir: false,
     lines: overrides?.lines ?? 10,
-    logic: 8,
-    comments: 1,
-    blanks: 1,
-    funcs: 0,
-    lang: "ts",
     sa: overrides?.sa ?? { functions: [], classes: [], imports: [] },
-  };
-}
-
-function makeSnapshot(
-  files: readonly FileNode[],
-  edges: readonly ImportEdge[],
-): Snapshot {
-  const adjacency = new Map<string, string[]>();
-  const reverseAdjacency = new Map<string, string[]>();
-
-  for (const f of files) {
-    adjacency.set(f.path, []);
-    reverseAdjacency.set(f.path, []);
-  }
-
-  for (const edge of edges) {
-    const fwd = adjacency.get(edge.fromFile);
-    if (fwd) fwd.push(edge.toFile);
-    const rev = reverseAdjacency.get(edge.toFile);
-    if (rev) rev.push(edge.fromFile);
-  }
-
-  const totalLines = files.reduce((sum, f) => sum + f.lines, 0);
-
-  return {
-    root: files[0] ?? makeFile("root"),
-    files,
-    totalFiles: files.length,
-    totalLines,
-    importGraph: { edges, adjacency, reverseAdjacency },
-  };
+  });
 }
 
 describe("computeHealth", () => {

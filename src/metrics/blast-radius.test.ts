@@ -1,18 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeBlastRadius } from "./blast-radius.js";
-
-function makeRevAdj(
-  edges: [string, string][],
-): ReadonlyMap<string, readonly string[]> {
-  // edges are [from, to], reverse adjacency maps to→from
-  const rev = new Map<string, string[]>();
-  for (const [from, to] of edges) {
-    if (!rev.has(from)) rev.set(from, []);
-    if (!rev.has(to)) rev.set(to, []);
-    rev.get(to)?.push(from);
-  }
-  return rev;
-}
+import { makeRevAdj } from "../testing/fixtures.js";
 
 describe("computeBlastRadius", () => {
   it("returns 0 for empty graph", () => {

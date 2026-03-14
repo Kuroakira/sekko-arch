@@ -1,37 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { computeCompositeGrade } from "./grade.js";
-import type { DimensionGrades, DimensionResult } from "../types/metrics.js";
-
-function makeDimResult(
-  name: DimensionResult["name"],
-  grade: DimensionResult["grade"],
-): DimensionResult {
-  return { name, rawValue: 0, grade };
-}
-
-function makeAllGrades(grade: DimensionResult["grade"]): DimensionGrades {
-  return {
-    cycles: makeDimResult("cycles", grade),
-    coupling: makeDimResult("coupling", grade),
-    depth: makeDimResult("depth", grade),
-    godFiles: makeDimResult("godFiles", grade),
-    complexFn: makeDimResult("complexFn", grade),
-    levelization: makeDimResult("levelization", grade),
-    blastRadius: makeDimResult("blastRadius", grade),
-  };
-}
+import type { DimensionGrades } from "../types/metrics.js";
+import { makeDimension, makeAllDimensionGrades } from "../testing/fixtures.js";
 
 describe("computeCompositeGrade", () => {
   it("returns A when all dimensions are A", () => {
-    expect(computeCompositeGrade(makeAllGrades("A"))).toBe("A");
+    expect(computeCompositeGrade(makeAllDimensionGrades("A"))).toBe("A");
   });
 
   it("returns B when all dimensions are B", () => {
-    expect(computeCompositeGrade(makeAllGrades("B"))).toBe("B");
+    expect(computeCompositeGrade(makeAllDimensionGrades("B"))).toBe("B");
   });
 
   it("returns F when all dimensions are F", () => {
-    expect(computeCompositeGrade(makeAllGrades("F"))).toBe("F");
+    expect(computeCompositeGrade(makeAllDimensionGrades("F"))).toBe("F");
   });
 
   it("caps composite at worst + 1 even if mean is higher", () => {
@@ -39,10 +21,10 @@ describe("computeCompositeGrade", () => {
     // mean = (6*4 + 0) / 7 = 24/7 = 3.43 => floor = 3 (B)
     // worst + 1 = 0 + 1 = 1 (D)
     // min(3, 1) = 1 => D
-    const grades = makeAllGrades("A");
+    const grades = makeAllDimensionGrades("A");
     const withOneF: DimensionGrades = {
       ...grades,
-      cycles: makeDimResult("cycles", "F"),
+      cycles: makeDimension("cycles", 0, "F"),
     };
     expect(computeCompositeGrade(withOneF)).toBe("D");
   });
@@ -50,7 +32,7 @@ describe("computeCompositeGrade", () => {
   it("uses mean when mean is lower than worst + 1", () => {
     // All D: mean = 1, worst + 1 = 2
     // min(1, 2) = 1 => D
-    expect(computeCompositeGrade(makeAllGrades("D"))).toBe("D");
+    expect(computeCompositeGrade(makeAllDimensionGrades("D"))).toBe("D");
   });
 
   it("handles mixed grades correctly", () => {
@@ -59,13 +41,13 @@ describe("computeCompositeGrade", () => {
     // worst + 1 = 1 + 1 = 2 (C)
     // min(3, 2) = 2 => C
     const grades: DimensionGrades = {
-      cycles: makeDimResult("cycles", "A"),
-      coupling: makeDimResult("coupling", "A"),
-      depth: makeDimResult("depth", "A"),
-      godFiles: makeDimResult("godFiles", "B"),
-      complexFn: makeDimResult("complexFn", "B"),
-      levelization: makeDimResult("levelization", "C"),
-      blastRadius: makeDimResult("blastRadius", "D"),
+      cycles: makeDimension("cycles", 0, "A"),
+      coupling: makeDimension("coupling", 0, "A"),
+      depth: makeDimension("depth", 0, "A"),
+      godFiles: makeDimension("godFiles", 0, "B"),
+      complexFn: makeDimension("complexFn", 0, "B"),
+      levelization: makeDimension("levelization", 0, "C"),
+      blastRadius: makeDimension("blastRadius", 0, "D"),
     };
     expect(computeCompositeGrade(grades)).toBe("C");
   });
@@ -74,7 +56,7 @@ describe("computeCompositeGrade", () => {
     // worst + 1 for all A's = 4 + 1 = 5, but should clamp to 4
     // mean of all A's = 4, floor = 4
     // min(4, 5) = 4 => A
-    expect(computeCompositeGrade(makeAllGrades("A"))).toBe("A");
+    expect(computeCompositeGrade(makeAllDimensionGrades("A"))).toBe("A");
   });
 
   it("handles a single F among mostly B grades", () => {
@@ -83,13 +65,13 @@ describe("computeCompositeGrade", () => {
     // worst + 1 = 0 + 1 = 1 (D)
     // min(2, 1) = 1 => D
     const grades: DimensionGrades = {
-      cycles: makeDimResult("cycles", "B"),
-      coupling: makeDimResult("coupling", "B"),
-      depth: makeDimResult("depth", "B"),
-      godFiles: makeDimResult("godFiles", "B"),
-      complexFn: makeDimResult("complexFn", "B"),
-      levelization: makeDimResult("levelization", "B"),
-      blastRadius: makeDimResult("blastRadius", "F"),
+      cycles: makeDimension("cycles", 0, "B"),
+      coupling: makeDimension("coupling", 0, "B"),
+      depth: makeDimension("depth", 0, "B"),
+      godFiles: makeDimension("godFiles", 0, "B"),
+      complexFn: makeDimension("complexFn", 0, "B"),
+      levelization: makeDimension("levelization", 0, "B"),
+      blastRadius: makeDimension("blastRadius", 0, "F"),
     };
     expect(computeCompositeGrade(grades)).toBe("D");
   });

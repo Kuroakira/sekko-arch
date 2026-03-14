@@ -1,6 +1,5 @@
 import type { FuncInfo } from "../types/index.js";
-
-const COMPLEX_THRESHOLD = 15;
+import { COMPLEXITY_CC_THRESHOLD } from "../constants.js";
 
 const ENTRY_POINT_PATTERNS = [/\/index\.tsx?$/, /\/main\.tsx?$/];
 
@@ -8,7 +7,7 @@ export function computeComplexFnRatio(functions: readonly FuncInfo[]): number {
   if (functions.length === 0) return 0;
 
   const complexCount = functions.filter(
-    (fn) => fn.cc > COMPLEX_THRESHOLD,
+    (fn) => fn.cc > COMPLEXITY_CC_THRESHOLD,
   ).length;
   return complexCount / functions.length;
 }

@@ -1,4 +1,8 @@
 import type { ImportEdge } from "../types/index.js";
+import {
+  STABILITY_INSTABILITY_THRESHOLD,
+  STABILITY_FAN_IN_THRESHOLD,
+} from "../constants.js";
 
 export interface CouplingResult {
   readonly score: number;
@@ -13,11 +17,11 @@ function isStable(
 ): boolean {
   const fi = fanIn.get(file) ?? 0;
   const fo = fanOut.get(file) ?? 0;
-  if (fi < 3) return false;
+  if (fi < STABILITY_FAN_IN_THRESHOLD) return false;
   const total = fi + fo;
   if (total === 0) return true;
   const instability = fo / total;
-  return instability <= 0.15;
+  return instability <= STABILITY_INSTABILITY_THRESHOLD;
 }
 
 export function computeCoupling(
