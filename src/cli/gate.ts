@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import type { Grade, HealthReport } from "../types/metrics.js";
 import { DIMENSION_NAMES } from "../dimensions.js";
 import { executePipeline } from "./scan.js";
+import type { ScanOptions } from "../scanner/index.js";
 
 export interface Baseline {
   readonly couplingScore: number;
@@ -78,8 +79,11 @@ function baselinePath(rootDir: string): string {
   return join(resolve(rootDir), ".sekko-arch", "baseline.json");
 }
 
-export function saveBaseline(rootDir: string): void {
-  const { health } = executePipeline(resolve(rootDir));
+export function saveBaseline(
+  rootDir: string,
+  scanOptions?: ScanOptions,
+): void {
+  const { health } = executePipeline(resolve(rootDir), scanOptions);
   const baseline = extractBaseline(health);
 
   const dir = join(resolve(rootDir), ".sekko-arch");
@@ -93,7 +97,10 @@ export function saveBaseline(rootDir: string): void {
   console.log("Baseline saved to .sekko-arch/baseline.json");
 }
 
-export function compareBaseline(rootDir: string): {
+export function compareBaseline(
+  rootDir: string,
+  scanOptions?: ScanOptions,
+): {
   passed: boolean;
   degradations: string[];
 } {
@@ -128,7 +135,7 @@ export function compareBaseline(rootDir: string): {
   }
 
   const baseline = parsed;
-  const { health } = executePipeline(resolve(rootDir));
+  const { health } = executePipeline(resolve(rootDir), scanOptions);
   const current = extractBaseline(health);
 
   const degradations: string[] = [];
@@ -177,14 +184,17 @@ export function compareBaseline(rootDir: string): {
 
 export function runGate(
   path: string,
-  options: { readonly save: boolean },
+  options: { readonly save: boolean; readonly include?: readonly string[] },
 ): void {
+  const scanOptions: ScanOptions | undefined = options.include?.length
+    ? { include: options.include }
+    : undefined;
   if (options.save) {
-    saveBaseline(path);
+    saveBaseline(path, scanOptions);
     return;
   }
 
-  const result = compareBaseline(path);
+  const result = compareBaseline(path, scanOptions);
 
   if (result.passed) {
     console.log("Quality gate PASSED - no degradations detected.");

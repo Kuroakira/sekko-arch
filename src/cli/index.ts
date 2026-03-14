@@ -24,17 +24,19 @@ export function createProgram(): Command {
     .command("scan")
     .description("Scan project files and structure")
     .argument("[path]", "path to scan", ".")
-    .action((scanPath: string) => {
+    .option("--include <dirs...>", "scan only specified directories")
+    .action((scanPath: string, cmdOpts: { include?: string[] }) => {
       const opts = program.opts<{ format: string }>();
-      runScan(scanPath, { format: opts.format });
+      runScan(scanPath, { format: opts.format, include: cmdOpts.include });
     });
 
   program
     .command("check")
     .description("Run architecture checks")
     .argument("[path]", "path to check", ".")
-    .action((checkPath: string) => {
-      runCheck(checkPath);
+    .option("--include <dirs...>", "scan only specified directories")
+    .action((checkPath: string, cmdOpts: { include?: string[] }) => {
+      runCheck(checkPath, { include: cmdOpts.include });
     });
 
   program
@@ -42,9 +44,12 @@ export function createProgram(): Command {
     .description("Run quality gate")
     .argument("[path]", "path to gate", ".")
     .option("--save", "save snapshot", false)
-    .action((gatePath: string, opts: { save: boolean }) => {
-      runGate(gatePath, { save: opts.save });
-    });
+    .option("--include <dirs...>", "scan only specified directories")
+    .action(
+      (gatePath: string, opts: { save: boolean; include?: string[] }) => {
+        runGate(gatePath, { save: opts.save, include: opts.include });
+      },
+    );
 
   return program;
 }

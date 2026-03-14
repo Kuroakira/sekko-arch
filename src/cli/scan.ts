@@ -4,6 +4,7 @@ import type { FileNode } from "../types/core.js";
 import type { Snapshot } from "../types/snapshot.js";
 import type { HealthReport } from "../types/metrics.js";
 import { scanFiles } from "../scanner/index.js";
+import type { ScanOptions } from "../scanner/index.js";
 import { parseAndExtract } from "../parser/index.js";
 import { buildImportGraph } from "../graph/index.js";
 import { computeHealth } from "../metrics/health.js";
@@ -14,10 +15,13 @@ export interface PipelineResult {
   readonly health: HealthReport;
 }
 
-export function executePipeline(rootDir: string): PipelineResult {
+export function executePipeline(
+  rootDir: string,
+  scanOptions?: ScanOptions,
+): PipelineResult {
   const absoluteRoot = resolve(rootDir);
 
-  const files = scanFiles(absoluteRoot);
+  const files = scanFiles(absoluteRoot, scanOptions);
 
   const parsedFiles: FileNode[] = [];
   for (const file of files) {
@@ -65,10 +69,13 @@ export function executePipeline(rootDir: string): PipelineResult {
 
 export function runScan(
   path: string,
-  options: { readonly format: string },
+  options: { readonly format: string; readonly include?: readonly string[] },
 ): void {
   const absolutePath = resolve(path);
-  const { health } = executePipeline(absolutePath);
+  const scanOptions: ScanOptions | undefined = options.include?.length
+    ? { include: options.include }
+    : undefined;
+  const { health } = executePipeline(absolutePath, scanOptions);
 
   const output = getFormatter(options.format).format(health);
 
