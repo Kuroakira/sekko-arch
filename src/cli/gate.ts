@@ -103,11 +103,13 @@ export function saveBaseline(rootDir: string): void {
   const baseline = extractBaseline(health);
 
   const dir = join(resolve(rootDir), ".archana");
-  if (!existsSync(dir)) {
+  try {
     mkdirSync(dir, { recursive: true });
+    writeFileSync(baselinePath(rootDir), JSON.stringify(baseline, null, 2));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to save baseline: ${msg}`, { cause: err });
   }
-
-  writeFileSync(baselinePath(rootDir), JSON.stringify(baseline, null, 2));
   console.log("Baseline saved to .archana/baseline.json");
 }
 
@@ -122,7 +124,13 @@ export function compareBaseline(rootDir: string): {
     );
   }
 
-  const raw = readFileSync(filePath, "utf-8");
+  let raw: string;
+  try {
+    raw = readFileSync(filePath, "utf-8");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to read baseline.json: ${msg}`, { cause: err });
+  }
 
   let parsed: unknown;
   try {

@@ -1,0 +1,25 @@
+[constraints]
+max_cycles = 0
+max_coupling = 0.5
+max_cc = 10
+no_god_files = true
+
+[[layers]]
+name = "utils"
+paths = ["src/utils/*"]
+order = 0
+
+[[layers]]
+name = "auth"
+paths = ["src/auth/*"]
+order = 1
+
+[[layers]]
+name = "api"
+paths = ["src/api/*"]
+order = 2
+
+[[boundaries]]
+from = "src/utils/*"
+to = "src/auth/*"
+reason = "utils must not depend on auth"

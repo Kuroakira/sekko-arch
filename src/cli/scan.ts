@@ -17,10 +17,24 @@ export function executePipeline(rootDir: string): PipelineResult {
 
   const files = scanFiles(absoluteRoot);
 
-  const parsedFiles: FileNode[] = files.map((file) => {
-    const source = readFileSync(join(absoluteRoot, file.path), "utf-8");
-    return parseAndExtract(file, source);
-  });
+  const parsedFiles: FileNode[] = [];
+  for (const file of files) {
+    let source: string;
+    try {
+      source = readFileSync(join(absoluteRoot, file.path), "utf-8");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`Warning: skipping ${file.path}: ${msg}`);
+      continue;
+    }
+    try {
+      parsedFiles.push(parseAndExtract(file, source));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`Warning: parse failed for ${file.path}: ${msg}`);
+      parsedFiles.push(file);
+    }
+  }
 
   const graph = buildImportGraph(parsedFiles, absoluteRoot);
 

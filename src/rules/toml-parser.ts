@@ -62,7 +62,14 @@ export function parseRulesFile(configDir: string): RulesConfig | null {
     return null;
   }
 
-  const content = readFileSync(filePath, "utf-8");
+  let content: string;
+  try {
+    content = readFileSync(filePath, "utf-8");
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown read error";
+    throw new Error(`Failed to read rules.toml: ${message}`, { cause: error });
+  }
 
   try {
     const parsed = parse(content);

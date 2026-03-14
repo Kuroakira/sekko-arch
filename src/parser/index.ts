@@ -71,6 +71,7 @@ function enrichWithComplexity(
 export function parseAndExtract(fileNode: FileNode, source: string): FileNode {
   const tree = parseFile(source, fileNode.lang);
   if (!tree) {
+    console.warn(`Warning: failed to parse ${fileNode.path} (skipping structural analysis)`);
     return { ...fileNode, sa: undefined };
   }
 

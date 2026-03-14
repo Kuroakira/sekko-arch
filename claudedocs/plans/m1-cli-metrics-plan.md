@@ -361,7 +361,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F (done) → G 
 
 ### Group H: Polish & Validation
 
-### Task 38: End-to-End Integration Test
+### [DONE] Task 38: End-to-End Integration Test (completed 2026-03-14T14:49)
 
 - **Description**: Create a sample TypeScript project fixture (10-20 files with known structure: some cycles, varying complexity, clear modules). Run full `archana scan` and verify all 7 metrics produce expected grades. Run `archana check` with rules and verify pass/fail. Run `archana gate --save` then `gate` and verify no degradation.
 - **Files**: `tests/fixtures/sample-project/`, `tests/e2e/full-pipeline.test.ts`
@@ -369,7 +369,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F (done) → G 
 - **Tests**: E2E test validates entire pipeline
 - **Acceptance criteria**: All commands produce correct, reproducible results on the fixture project
 
-### Task 39: Performance Validation
+### [DONE] Task 39: Performance Validation (completed 2026-03-14T14:53)
 
 - **Description**: Benchmark scan on a larger TypeScript project (or generated fixture). Verify single-threaded performance is within acceptable range. If >15 seconds at 5,000 files, identify bottleneck and document for potential worker_threads optimization.
 - **Files**: `tests/bench/scan-performance.test.ts`
@@ -377,7 +377,7 @@ A (done) → B (done) → C (done) → D (done) → E (done) → F (done) → G 
 - **Tests**: Benchmark test measuring scan time
 - **Acceptance criteria**: Performance measured and documented. If within 15s, mark as passing. If not, identify bottleneck (likely parser) and document worker_threads migration path.
 
-### Task 40: Error Handling Polish
+### [DONE] Task 40: Error Handling Polish (completed 2026-03-14T15:07)
 
 - **Description**: Review all error paths. Ensure: file read failures are skipped with warning (not crash), invalid tsconfig.json produces helpful error, permission denied is handled, empty projects produce a valid (all-A) report. Test edge cases: empty directory, single file, no TS files.
 - **Files**: Various (error handling improvements across modules)
