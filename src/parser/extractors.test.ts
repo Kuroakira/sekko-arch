@@ -257,6 +257,73 @@ function foo() { return x; }`;
   });
 });
 
+describe("bodyHash", () => {
+  it("produces same hash for identical function bodies", () => {
+    const source = `function a() { return 1; }
+function b() { return 1; }`;
+    const tree = parseTsSource(source);
+    const funcs = extractFunctions(tree);
+
+    expect(funcs).toHaveLength(2);
+    expect(funcs[0]?.bodyHash).toBe(funcs[1]?.bodyHash);
+    expect(funcs[0]?.bodyHash.length).toBeGreaterThan(0);
+  });
+
+  it("produces same hash when only comments differ", () => {
+    const sourceA = `function a() {
+  // this is a comment
+  return 1;
+}`;
+    const sourceB = `function a() {
+  return 1;
+}`;
+    const treeA = parseTsSource(sourceA);
+    const treeB = parseTsSource(sourceB);
+    const funcsA = extractFunctions(treeA);
+    const funcsB = extractFunctions(treeB);
+
+    expect(funcsA[0]?.bodyHash).toBe(funcsB[0]?.bodyHash);
+  });
+
+  it("produces same hash when only whitespace differs", () => {
+    const sourceA = `function a() {
+  return   1;
+}`;
+    const sourceB = `function a() {
+  return 1;
+}`;
+    const treeA = parseTsSource(sourceA);
+    const treeB = parseTsSource(sourceB);
+    const funcsA = extractFunctions(treeA);
+    const funcsB = extractFunctions(treeB);
+
+    expect(funcsA[0]?.bodyHash).toBe(funcsB[0]?.bodyHash);
+  });
+
+  it("produces different hashes for different function bodies", () => {
+    const source = `function a() { return 1; }
+function b() { return 2; }`;
+    const tree = parseTsSource(source);
+    const funcs = extractFunctions(tree);
+
+    expect(funcs).toHaveLength(2);
+    expect(funcs[0]?.bodyHash).not.toBe(funcs[1]?.bodyHash);
+  });
+
+  it("uses arrow_function body for arrow function hash", () => {
+    const sourceArrow = `const a = (x: number) => { return x + 1; };`;
+    const sourceFunc = `function a(x: number) { return x + 1; }`;
+    const treeArrow = parseTsSource(sourceArrow);
+    const treeFunc = parseTsSource(sourceFunc);
+    const funcsArrow = extractFunctions(treeArrow);
+    const funcsFunc = extractFunctions(treeFunc);
+
+    // Both hash only the body block `{ return x + 1; }`, so same hash
+    expect(funcsArrow[0]?.bodyHash).toBe(funcsFunc[0]?.bodyHash);
+    expect(funcsArrow[0]?.bodyHash.length).toBeGreaterThan(0);
+  });
+});
+
 describe("extractFunctions and extractClasses on empty source", () => {
   it("returns empty arrays for empty source", () => {
     const source = "";

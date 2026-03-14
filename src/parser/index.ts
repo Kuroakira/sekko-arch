@@ -2,6 +2,7 @@ import type { FileNode, StructuralAnalysis, FuncInfo } from "../types/core.js";
 import { parseFile } from "./ts-grammar.js";
 import { extractFunctions, extractClasses, extractImports } from "./extractors.js";
 import { computeComplexity } from "./complexity.js";
+import { computeCognitiveComplexity } from "./cognitive-complexity.js";
 import type Parser from "tree-sitter";
 
 const FUNCTION_NODE_TYPES = new Set([
@@ -64,7 +65,8 @@ function enrichFunctions(
     const node = findFunctionNode(root, fn);
     if (!node) return fn;
     const cc = computeComplexity(node);
-    return { ...fn, cc };
+    const cognitiveComplexity = computeCognitiveComplexity(node);
+    return { ...fn, cc, cognitiveComplexity };
   });
 }
 

@@ -1,8 +1,21 @@
+import { createHash } from "node:crypto";
 import type { Tree } from "./ts-grammar.js";
 import type { FuncInfo } from "../types/core.js";
 import type Parser from "tree-sitter";
 
 type SyntaxNode = Parser.SyntaxNode;
+
+function computeBodyHash(node: SyntaxNode): string {
+  const body = node.childForFieldName("body");
+  const target = body ?? node;
+  const text = target.text;
+  const normalized = text
+    .replace(/\/\/[^\n]*/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return createHash("sha256").update(normalized).digest("hex").slice(0, 16);
+}
 
 function countParams(paramsNode: SyntaxNode | null): number {
   if (paramsNode === null) {
@@ -15,6 +28,7 @@ function makeFuncInfo(
   name: string,
   node: SyntaxNode,
   paramsNode: SyntaxNode | null,
+  bodyHashNode?: SyntaxNode,
 ): FuncInfo {
   const startLine = node.startPosition.row + 1;
   const endLine = node.endPosition.row + 1;
@@ -25,7 +39,7 @@ function makeFuncInfo(
     lineCount: endLine - startLine + 1,
     cc: 1,
     paramCount: countParams(paramsNode),
-    bodyHash: "",
+    bodyHash: computeBodyHash(bodyHashNode ?? node),
     cognitiveComplexity: 0,
   };
 }
@@ -48,7 +62,7 @@ function extractArrowFromDeclarator(
   }
   const name = nameNode?.text ?? "<anonymous>";
   const params = value.childForFieldName("parameters");
-  return makeFuncInfo(name, parentNode, params);
+  return makeFuncInfo(name, parentNode, params, value);
 }
 
 function extractMethodsFromClassBody(body: SyntaxNode): FuncInfo[] {

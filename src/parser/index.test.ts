@@ -137,6 +137,38 @@ const App = () => <div>Hello</div>;`;
     expect(routeFn?.cc).toBe(3); // 1 base + 2 if statements
   });
 
+  it("computes cognitive complexity for functions", () => {
+    const source = `function nested(x: number): string {
+  if (x > 0) {
+    if (x > 10) {
+      return "big";
+    }
+    return "small";
+  }
+  return "negative";
+}`;
+    const node = makeFileNode();
+    const result = parseAndExtract(node, source);
+
+    const fn = result.sa?.functions.find((f) => f.name === "nested");
+    expect(fn).toBeDefined();
+    expect(fn?.cognitiveComplexity).toBe(3); // if +1, nested if +1+1
+  });
+
+  it("computes bodyHash for functions", () => {
+    const source = `function a() { return 1; }
+function b() { return 1; }
+function c() { return 2; }`;
+    const node = makeFileNode();
+    const result = parseAndExtract(node, source);
+
+    const fns = result.sa?.functions ?? [];
+    expect(fns).toHaveLength(3);
+    expect(fns[0]?.bodyHash).toBe(fns[1]?.bodyHash);
+    expect(fns[0]?.bodyHash).not.toBe(fns[2]?.bodyHash);
+    expect(fns[0]?.bodyHash.length).toBeGreaterThan(0);
+  });
+
   it("computes CC for multi-line arrow functions", () => {
     const source = `const handler =
   (req: string) => {
