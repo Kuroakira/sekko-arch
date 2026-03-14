@@ -28,6 +28,18 @@ const DEFAULT_RAW_VALUES: Readonly<Record<DimensionName, number>> = {
   complexFn: 0.02,
   levelization: 0,
   blastRadius: 0.08,
+  cohesion: 0.2,
+  entropy: 0.3,
+  cognitiveComplexity: 0.01,
+  hotspots: 0,
+  longFunctions: 0.03,
+  largeFiles: 0.03,
+  highParams: 0.02,
+  duplication: 0.005,
+  deadCode: 0.02,
+  comments: 0.85,
+  distanceFromMainSeq: 0.15,
+  attackSurface: 0.25,
 };
 
 export function makeAllDimensionGrades(
@@ -124,6 +136,8 @@ export function makeFuncInfo(
     lineCount: 10,
     cc: 1,
     paramCount: 1,
+    bodyHash: "default-hash",
+    cognitiveComplexity: 0,
     ...overrides,
   };
 }

@@ -9,15 +9,6 @@ import { makeDimension, makeHealth as makeSharedHealth } from "../testing/fixtur
 
 function makeHealth(overrides: Partial<HealthReport> = {}) {
   return makeSharedHealth({
-    dimensions: {
-      cycles: makeDimension("cycles", 0),
-      coupling: makeDimension("coupling", 0.1),
-      depth: makeDimension("depth", 3),
-      godFiles: makeDimension("godFiles", 0),
-      complexFn: makeDimension("complexFn", 0),
-      levelization: makeDimension("levelization", 0),
-      blastRadius: makeDimension("blastRadius", 0.1),
-    },
     fileCount: 10,
     scanDurationMs: 100,
     ...overrides,

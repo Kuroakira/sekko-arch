@@ -1,6 +1,7 @@
 import type { DimensionName, DimensionResult } from "../types/metrics.js";
 import { gradeDimension } from "../grading/thresholds.js";
 import { COMPLEXITY_CC_THRESHOLD } from "../constants.js";
+import { DIMENSION_NAMES } from "../dimensions.js";
 import { computeCoupling } from "./coupling.js";
 import { computeMaxDepth } from "./depth.js";
 import { detectGodFiles } from "./god-files.js";
@@ -25,6 +26,17 @@ function makeDimensionResult(
 export interface MetricComputation {
   readonly name: DimensionName;
   readonly compute: (ctx: MetricContext) => DimensionResult;
+}
+
+// Stub computation for dimensions not yet implemented.
+// Returns rawValue 0 and grade "A". Will be replaced with real implementations in Groups C/D.
+function stubComputation(name: DimensionName): MetricComputation {
+  return {
+    name,
+    compute() {
+      return makeDimensionResult(name, 0);
+    },
+  };
 }
 
 export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
@@ -108,4 +120,24 @@ export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
       });
     },
   },
+  // Stub computations for M2 dimensions — replaced with real implementations in Groups C/D
+  stubComputation("cohesion"),
+  stubComputation("entropy"),
+  stubComputation("cognitiveComplexity"),
+  stubComputation("hotspots"),
+  stubComputation("longFunctions"),
+  stubComputation("largeFiles"),
+  stubComputation("highParams"),
+  stubComputation("duplication"),
+  stubComputation("deadCode"),
+  stubComputation("comments"),
+  stubComputation("distanceFromMainSeq"),
+  stubComputation("attackSurface"),
 ];
+
+// Validate that METRIC_COMPUTATIONS covers every DimensionName
+if (METRIC_COMPUTATIONS.length !== DIMENSION_NAMES.length) {
+  throw new Error(
+    `METRIC_COMPUTATIONS has ${METRIC_COMPUTATIONS.length} entries but DIMENSION_NAMES has ${DIMENSION_NAMES.length}. Every dimension must have a computation.`,
+  );
+}

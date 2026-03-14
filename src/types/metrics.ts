@@ -9,7 +9,19 @@ export type DimensionName =
   | "godFiles"
   | "complexFn"
   | "levelization"
-  | "blastRadius";
+  | "blastRadius"
+  | "cohesion"
+  | "entropy"
+  | "cognitiveComplexity"
+  | "hotspots"
+  | "longFunctions"
+  | "largeFiles"
+  | "highParams"
+  | "duplication"
+  | "deadCode"
+  | "comments"
+  | "distanceFromMainSeq"
+  | "attackSurface";
 
 export interface DimensionResult {
   readonly name: DimensionName;

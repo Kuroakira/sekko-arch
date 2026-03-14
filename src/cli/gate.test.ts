@@ -7,7 +7,8 @@ import type {
   DimensionGrades,
   Grade,
 } from "../types/index.js";
-import { makeDimension, makeFileNode } from "../testing/fixtures.js";
+import { makeDimension, makeFileNode, makeHealth } from "../testing/fixtures.js";
+import { DIMENSION_NAMES } from "../dimensions.js";
 
 function makeGateHealth(overrides?: {
   coupling?: number;
@@ -19,7 +20,9 @@ function makeGateHealth(overrides?: {
   compositeGrade?: Grade;
 }): HealthReport {
   const o = overrides ?? {};
+  const base = makeHealth();
   const dimensions: DimensionGrades = {
+    ...base.dimensions,
     cycles: makeDimension("cycles", o.cycles ?? 0, "A"),
     coupling: makeDimension("coupling", o.coupling ?? 0.1, o.couplingGrade ?? "A"),
     depth: makeDimension("depth", o.depth ?? 3, "A"),
@@ -117,6 +120,10 @@ describe("compareBaseline", () => {
 
   function writeBaseline(overrides?: Parameters<typeof makeGateHealth>[0]): void {
     const health = makeGateHealth(overrides);
+    const dimensionGrades: Record<string, Grade> = {};
+    for (const name of DIMENSION_NAMES) {
+      dimensionGrades[name] = health.dimensions[name].grade;
+    }
     const baseline: Baseline = {
       couplingScore: health.dimensions.coupling.rawValue,
       cycleCount: health.dimensions.cycles.rawValue,
@@ -124,15 +131,7 @@ describe("compareBaseline", () => {
       complexFnRatio: health.dimensions.complexFn.rawValue,
       maxDepth: health.dimensions.depth.rawValue,
       compositeGrade: health.compositeGrade,
-      dimensionGrades: {
-        cycles: health.dimensions.cycles.grade,
-        coupling: health.dimensions.coupling.grade,
-        depth: health.dimensions.depth.grade,
-        godFiles: health.dimensions.godFiles.grade,
-        complexFn: health.dimensions.complexFn.grade,
-        levelization: health.dimensions.levelization.grade,
-        blastRadius: health.dimensions.blastRadius.grade,
-      },
+      dimensionGrades,
     };
     const dir = join(tmpDir, ".archana");
     mkdirSync(dir, { recursive: true });

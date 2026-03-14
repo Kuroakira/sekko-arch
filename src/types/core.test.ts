@@ -17,9 +17,13 @@ describe("Core Types", () => {
       lineCount: 16,
       cc: 3,
       paramCount: 2,
+      bodyHash: "abc123",
+      cognitiveComplexity: 5,
     };
     expect(func.name).toBe("handleRequest");
     expect(func.cc).toBe(3);
+    expect(func.bodyHash).toBe("abc123");
+    expect(func.cognitiveComplexity).toBe(5);
   });
 
   it("constructs a ClassInfo", () => {
@@ -76,6 +80,8 @@ describe("Core Types", () => {
           lineCount: 10,
           cc: 1,
           paramCount: 0,
+          bodyHash: "main-hash",
+          cognitiveComplexity: 0,
         },
       ],
       classes: [],

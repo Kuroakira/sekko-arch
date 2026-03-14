@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ImportEdge } from "../types/index.js";
-import { makeDimension, makeHealth } from "../testing/fixtures.js";
+import { makeHealth } from "../testing/fixtures.js";
 
 vi.mock("./scan.js", () => ({
   executePipeline: vi.fn(),
@@ -21,15 +21,6 @@ const mockCheckRules = vi.mocked(checkRules);
 
 function makeMockHealth() {
   return makeHealth({
-    dimensions: {
-      cycles: makeDimension("cycles", 0, "A"),
-      coupling: makeDimension("coupling", 0, "A"),
-      depth: makeDimension("depth", 0, "A"),
-      godFiles: makeDimension("godFiles", 0, "A"),
-      complexFn: makeDimension("complexFn", 0, "A"),
-      levelization: makeDimension("levelization", 0, "A"),
-      blastRadius: makeDimension("blastRadius", 0, "A"),
-    },
     fileCount: 10,
     scanDurationMs: 50,
   });

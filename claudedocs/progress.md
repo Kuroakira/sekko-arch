@@ -23,3 +23,14 @@
 - Decision: 40タスク・10フェーズの実装プラン。単一スレッドで開始、ベンチマーク後にworker threads検討。sentruxのRust実装をアルゴリズム参考に使用
 - Rationale: パイプライン順（types→scanner→parser→graph→metrics→grading→CLI→rules→integration）で依存関係に沿った順序。各タスクは独立テスト可能なサイズ
 - Domain: architecture-analysis
+
+## 2026-03-14 — /claude-praxis:plan: Plan complete — sekko-arch M2 MCP連携 + 指標拡充
+- Decision: 32タスク・7グループ(A-G)の実装プラン。M1リファクタリング済みのregistry pattern + MetricContext基盤の上に、12新メトリクス + stdio MCPサーバーを構築。MetricContext moduleEdgesは不要（既存フィールドで計算可能）
+- Rationale: 型変更を先に整備(Group A)→パーサー拡張(B)→12メトリクス並列実装(C/D)→統合(E)→MCP(F)→E2E(G)の依存順。テストヘルパー(T04)でbreaking changeの影響を最小化。rawValue反転は各compute関数内で実施（二重反転防止）。gate.tsのrawValue比較ハードコードはM3リファクタリング候補として記録
+- Domain: architecture-analysis, mcp-integration
+
+## 2026-03-14 — M2 Group A complete — 型システム・基盤拡張
+- Decision: DimensionName 7→19次元、FuncInfo +2フィールド(bodyHash, cognitiveComplexity)、DIMENSION_REGISTRY 19エントリ、既存テスト11ファイル修正。registry.tsに12スタブcomputation + 完全性アサーション追加
+- Rationale: 後続Group全体の型基盤を先に整備。スタブcomputationでシステム全体の動作を維持しつつ、Group C/Dで段階的に実装置換する方針。5レビュー全PASS、414テスト全通過
+- Files: src/types/metrics.ts, src/types/core.ts, src/dimensions.ts, src/metrics/registry.ts, src/parser/function-extractors.ts, src/testing/fixtures.ts + テスト11ファイル
+- Domain: architecture-analysis

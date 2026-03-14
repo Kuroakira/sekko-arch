@@ -9,6 +9,8 @@ export interface FuncInfo {
   readonly lineCount: number;
   readonly cc: number;
   readonly paramCount: number;
+  readonly bodyHash: string;
+  readonly cognitiveComplexity: number;
 }
 
 export interface ClassInfo {

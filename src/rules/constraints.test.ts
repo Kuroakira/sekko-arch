@@ -7,17 +7,9 @@ import type {
 import { makeDimension, makeHealth } from "../testing/fixtures.js";
 
 function makeConstraintHealth(overrides: Partial<DimensionGrades> = {}) {
-  const defaults: DimensionGrades = {
-    cycles: makeDimension("cycles", 0),
-    coupling: makeDimension("coupling", 0.3),
-    depth: makeDimension("depth", 4),
-    godFiles: makeDimension("godFiles", 0),
-    complexFn: makeDimension("complexFn", 0),
-    levelization: makeDimension("levelization", 0.8),
-    blastRadius: makeDimension("blastRadius", 0.1),
-  };
+  const base = makeHealth();
   return makeHealth({
-    dimensions: { ...defaults, ...overrides },
+    dimensions: { ...base.dimensions, ...overrides },
     fileCount: 10,
     scanDurationMs: 100,
   });

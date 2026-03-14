@@ -7,6 +7,7 @@ import type {
   DimensionGrades,
   HealthReport,
 } from "./metrics.js";
+import { makeAllDimensionGrades, makeHealth } from "../testing/fixtures.js";
 
 describe("Metrics Types", () => {
   it("Grade type accepts A-F", () => {
@@ -26,7 +27,7 @@ describe("Metrics Types", () => {
     expect(values.F).toBe(0);
   });
 
-  it("DimensionName covers all 7 dimensions", () => {
+  it("DimensionName covers all 19 dimensions", () => {
     const dims: DimensionName[] = [
       "cycles",
       "coupling",
@@ -35,8 +36,20 @@ describe("Metrics Types", () => {
       "complexFn",
       "levelization",
       "blastRadius",
+      "cohesion",
+      "entropy",
+      "cognitiveComplexity",
+      "hotspots",
+      "longFunctions",
+      "largeFiles",
+      "highParams",
+      "duplication",
+      "deadCode",
+      "comments",
+      "distanceFromMainSeq",
+      "attackSurface",
     ];
-    expect(dims).toHaveLength(7);
+    expect(dims).toHaveLength(19);
   });
 
   it("constructs a DimensionResult", () => {
@@ -50,56 +63,19 @@ describe("Metrics Types", () => {
     expect(result.rawValue).toBe(2);
   });
 
-  it("constructs DimensionGrades with all 7 dimensions", () => {
-    const makeDim = (
-      name: DimensionName,
-      value: number,
-      grade: Grade
-    ): DimensionResult => ({
-      name,
-      rawValue: value,
-      grade,
-    });
-
-    const grades: DimensionGrades = {
-      cycles: makeDim("cycles", 0, "A"),
-      coupling: makeDim("coupling", 0.15, "A"),
-      depth: makeDim("depth", 4, "A"),
-      godFiles: makeDim("godFiles", 0, "A"),
-      complexFn: makeDim("complexFn", 0.01, "A"),
-      levelization: makeDim("levelization", 0, "A"),
-      blastRadius: makeDim("blastRadius", 0.05, "A"),
-    };
+  it("constructs DimensionGrades with all 19 dimensions", () => {
+    const grades: DimensionGrades = makeAllDimensionGrades("A");
 
     expect(grades.cycles.grade).toBe("A");
-    expect(grades.coupling.rawValue).toBe(0.15);
+    expect(Object.keys(grades)).toHaveLength(19);
   });
 
   it("constructs a HealthReport", () => {
-    const makeDim = (
-      name: DimensionName,
-      value: number,
-      grade: Grade
-    ): DimensionResult => ({
-      name,
-      rawValue: value,
-      grade,
-    });
-
-    const report: HealthReport = {
-      dimensions: {
-        cycles: makeDim("cycles", 1, "B"),
-        coupling: makeDim("coupling", 0.4, "C"),
-        depth: makeDim("depth", 6, "B"),
-        godFiles: makeDim("godFiles", 0, "A"),
-        complexFn: makeDim("complexFn", 0.08, "C"),
-        levelization: makeDim("levelization", 0.01, "A"),
-        blastRadius: makeDim("blastRadius", 0.18, "A"),
-      },
+    const report: HealthReport = makeHealth({
       compositeGrade: "B",
       fileCount: 150,
       scanDurationMs: 1200,
-    };
+    });
 
     expect(report.compositeGrade).toBe("B");
     expect(report.fileCount).toBe(150);

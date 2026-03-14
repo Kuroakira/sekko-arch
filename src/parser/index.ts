@@ -56,7 +56,7 @@ function findFunctionNode(
   return null;
 }
 
-function enrichWithComplexity(
+function enrichFunctions(
   functions: readonly FuncInfo[],
   root: Parser.SyntaxNode,
 ): FuncInfo[] {
@@ -77,7 +77,7 @@ export function parseAndExtract(fileNode: FileNode, source: string): FileNode {
 
   const root = tree.rootNode;
   const rawFunctions = extractFunctions(tree);
-  const functions = enrichWithComplexity(rawFunctions, root);
+  const functions = enrichFunctions(rawFunctions, root);
   const classes = extractClasses(tree);
   const imports = extractImports(tree);
 

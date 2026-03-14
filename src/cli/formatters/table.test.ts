@@ -16,7 +16,7 @@ describe("formatTable", () => {
     expect(output).toContain("Grade");
   });
 
-  it("displays all 7 dimensions with human-readable names", () => {
+  it("displays original 7 dimensions with human-readable names", () => {
     const output = formatTable(makeHealth());
     expect(output).toContain("Cycles");
     expect(output).toContain("Coupling");
@@ -54,6 +54,7 @@ describe("formatTable", () => {
   it("shows each dimension grade", () => {
     const report = makeHealth({
       dimensions: {
+        ...makeHealth().dimensions,
         cycles: makeDimension("cycles", 3, "D"),
         coupling: makeDimension("coupling", 0.5, "C"),
         depth: makeDimension("depth", 8, "F"),
@@ -89,6 +90,7 @@ describe("formatTable", () => {
   it("handles large numbers", () => {
     const report = makeHealth({
       dimensions: {
+        ...makeHealth().dimensions,
         cycles: makeDimension("cycles", 100, "F"),
         coupling: makeDimension("coupling", 0.99, "F"),
         depth: makeDimension("depth", 25, "F"),
@@ -109,15 +111,6 @@ describe("formatTable", () => {
 
   it("handles zero values", () => {
     const report = makeHealth({
-      dimensions: {
-        cycles: makeDimension("cycles", 0, "A"),
-        coupling: makeDimension("coupling", 0, "A"),
-        depth: makeDimension("depth", 0, "A"),
-        godFiles: makeDimension("godFiles", 0, "A"),
-        complexFn: makeDimension("complexFn", 0, "A"),
-        levelization: makeDimension("levelization", 0, "A"),
-        blastRadius: makeDimension("blastRadius", 0, "A"),
-      },
       compositeGrade: "A",
       fileCount: 0,
       scanDurationMs: 0,

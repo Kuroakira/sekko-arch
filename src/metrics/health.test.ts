@@ -15,7 +15,7 @@ function makeFile(
 }
 
 describe("computeHealth", () => {
-  it("returns a HealthReport with all 7 dimensions for a minimal snapshot", () => {
+  it("returns a HealthReport with all 19 dimensions for a minimal snapshot", () => {
     const files = [
       makeFile("src/auth/login.ts"),
       makeFile("src/auth/signup.ts"),
@@ -34,6 +34,7 @@ describe("computeHealth", () => {
     expect(report.scanDurationMs).toBeGreaterThanOrEqual(0);
 
     const dimensionNames = Object.keys(report.dimensions);
+    expect(dimensionNames).toHaveLength(19);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
     expect(dimensionNames).toContain("depth");
@@ -41,13 +42,12 @@ describe("computeHealth", () => {
     expect(dimensionNames).toContain("complexFn");
     expect(dimensionNames).toContain("levelization");
     expect(dimensionNames).toContain("blastRadius");
+    expect(dimensionNames).toContain("cohesion");
+    expect(dimensionNames).toContain("entropy");
 
     for (const dim of Object.values(report.dimensions)) {
       expect(dim.grade).toMatch(/^[ABCDF]$/);
       expect(typeof dim.rawValue).toBe("number");
-      expect(dim.name).toMatch(
-        /^(cycles|coupling|depth|godFiles|complexFn|levelization|blastRadius)$/,
-      );
     }
   });
 
@@ -102,6 +102,8 @@ describe("computeHealth", () => {
       lineCount: 50,
       cc: 20,
       paramCount: 3,
+      bodyHash: "hash-complex",
+      cognitiveComplexity: 0,
     };
     const simpleFn = {
       name: "simpleOne",
@@ -110,6 +112,8 @@ describe("computeHealth", () => {
       lineCount: 5,
       cc: 1,
       paramCount: 0,
+      bodyHash: "hash-simple",
+      cognitiveComplexity: 0,
     };
 
     const files = [
@@ -203,7 +207,7 @@ describe("computeHealth", () => {
     expect(details.count).toBeGreaterThanOrEqual(1);
   });
 
-  it("populates details for all dimensions", () => {
+  it("populates details for original 7 dimensions", () => {
     const files = [
       makeFile("src/auth/login.ts"),
       makeFile("src/utils/helpers.ts"),
@@ -215,8 +219,9 @@ describe("computeHealth", () => {
 
     const report = computeHealth(snapshot);
 
-    for (const dim of Object.values(report.dimensions)) {
-      expect(dim.details).toBeDefined();
+    const originalDims = ["cycles", "coupling", "depth", "godFiles", "complexFn", "levelization", "blastRadius"] as const;
+    for (const name of originalDims) {
+      expect(report.dimensions[name].details).toBeDefined();
     }
   });
 

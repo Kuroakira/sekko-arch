@@ -1,21 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { getFormatter } from "./index.js";
-import type { HealthReport } from "../../types/metrics.js";
+import { makeHealth } from "../../testing/fixtures.js";
 
-const stubReport: HealthReport = {
-  dimensions: {
-    cycles: { name: "cycles", rawValue: 0, grade: "A" },
-    coupling: { name: "coupling", rawValue: 0.1, grade: "A" },
-    depth: { name: "depth", rawValue: 2, grade: "A" },
-    godFiles: { name: "godFiles", rawValue: 0, grade: "A" },
-    complexFn: { name: "complexFn", rawValue: 0, grade: "A" },
-    levelization: { name: "levelization", rawValue: 0.9, grade: "A" },
-    blastRadius: { name: "blastRadius", rawValue: 0.05, grade: "A" },
-  },
-  compositeGrade: "A",
+const stubReport = makeHealth({
   fileCount: 5,
   scanDurationMs: 42,
-};
+});
 
 describe("getFormatter", () => {
   it("returns a formatter for 'table' that produces a string containing 'sekko-arch'", () => {

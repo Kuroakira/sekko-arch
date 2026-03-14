@@ -25,6 +25,8 @@ function makeFuncInfo(
     lineCount: endLine - startLine + 1,
     cc: 1,
     paramCount: countParams(paramsNode),
+    bodyHash: "",
+    cognitiveComplexity: 0,
   };
 }
 
