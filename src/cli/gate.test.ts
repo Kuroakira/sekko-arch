@@ -93,8 +93,8 @@ describe("saveBaseline", () => {
 
     expect(baseline.couplingScore).toBe(0.15);
     expect(baseline.cycleCount).toBe(2);
-    expect(baseline.godFileCount).toBe(1);
-    expect(baseline.complexFnCount).toBe(3);
+    expect(baseline.godFileRatio).toBe(1);
+    expect(baseline.complexFnRatio).toBe(3);
     expect(baseline.maxDepth).toBe(5);
     expect(baseline.compositeGrade).toBe("B");
     expect(baseline.dimensionGrades).toHaveProperty("cycles");
@@ -120,8 +120,8 @@ describe("compareBaseline", () => {
     const baseline: Baseline = {
       couplingScore: health.dimensions.coupling.rawValue,
       cycleCount: health.dimensions.cycles.rawValue,
-      godFileCount: health.dimensions.godFiles.rawValue,
-      complexFnCount: health.dimensions.complexFn.rawValue,
+      godFileRatio: health.dimensions.godFiles.rawValue,
+      complexFnRatio: health.dimensions.complexFn.rawValue,
       maxDepth: health.dimensions.depth.rawValue,
       compositeGrade: health.compositeGrade,
       dimensionGrades: {
@@ -236,8 +236,8 @@ describe("compareBaseline", () => {
       JSON.stringify({
         couplingScore: "not-a-number",
         cycleCount: 0,
-        godFileCount: 0,
-        complexFnCount: 0,
+        godFileRatio: 0,
+        complexFnRatio: 0,
         maxDepth: 0,
         compositeGrade: "A",
         dimensionGrades: {
@@ -265,8 +265,8 @@ describe("compareBaseline", () => {
       JSON.stringify({
         couplingScore: 0.1,
         cycleCount: 0,
-        godFileCount: 0,
-        complexFnCount: 0,
+        godFileRatio: 0,
+        complexFnRatio: 0,
         maxDepth: 3,
         compositeGrade: "A",
         dimensionGrades: {

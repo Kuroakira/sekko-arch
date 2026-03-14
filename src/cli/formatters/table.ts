@@ -1,33 +1,9 @@
-import type {
-  HealthReport,
-  DimensionName,
-  DimensionResult,
-} from "../../types/metrics.js";
+import type { HealthReport, DimensionResult } from "../../types/metrics.js";
+import { DIMENSION_REGISTRY } from "../../dimensions.js";
 
-const DIMENSION_LABELS: ReadonlyMap<DimensionName, string> = new Map([
-  ["cycles", "Cycles"],
-  ["coupling", "Coupling"],
-  ["depth", "Depth"],
-  ["godFiles", "God Files"],
-  ["complexFn", "Complex Fns"],
-  ["levelization", "Levelization"],
-  ["blastRadius", "Blast Radius"],
-]);
-
-const INTEGER_DIMENSIONS: ReadonlySet<DimensionName> = new Set<DimensionName>([
-  "cycles",
-  "depth",
-]);
-
-const DIMENSION_ORDER: readonly DimensionName[] = [
-  "cycles",
-  "coupling",
-  "depth",
-  "godFiles",
-  "complexFn",
-  "levelization",
-  "blastRadius",
-];
+const INTEGER_DIMENSIONS: ReadonlySet<string> = new Set(
+  DIMENSION_REGISTRY.filter((d) => d.isInteger).map((d) => d.name),
+);
 
 function padRight(str: string, width: number): string {
   const padding = width - str.length;
@@ -65,12 +41,11 @@ export function formatTable(report: HealthReport): string {
   );
   lines.push(separator);
 
-  for (const name of DIMENSION_ORDER) {
-    const dim = report.dimensions[name];
-    const label = DIMENSION_LABELS.get(name) ?? name;
+  for (const config of DIMENSION_REGISTRY) {
+    const dim = report.dimensions[config.name];
     const value = formatValue(dim);
     lines.push(
-      `${indent}${padRight(label, dimColWidth)} ${padLeft(value, valColWidth)} ${padLeft(dim.grade, gradeColWidth)}`
+      `${indent}${padRight(config.label, dimColWidth)} ${padLeft(value, valColWidth)} ${padLeft(dim.grade, gradeColWidth)}`
     );
   }
 

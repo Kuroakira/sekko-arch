@@ -1,24 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Grade, HealthReport } from "../types/index.js";
+import { DIMENSION_NAMES } from "../dimensions.js";
 import { executePipeline } from "./scan.js";
 
 export interface Baseline {
   readonly couplingScore: number;
   readonly cycleCount: number;
-  readonly godFileCount: number;
-  readonly complexFnCount: number;
+  readonly godFileRatio: number;
+  readonly complexFnRatio: number;
   readonly maxDepth: number;
   readonly compositeGrade: Grade;
-  readonly dimensionGrades: {
-    readonly cycles: Grade;
-    readonly coupling: Grade;
-    readonly depth: Grade;
-    readonly godFiles: Grade;
-    readonly complexFn: Grade;
-    readonly levelization: Grade;
-    readonly blastRadius: Grade;
-  };
+  readonly dimensionGrades: Readonly<Record<string, Grade>>;
 }
 
 const VALID_GRADES: ReadonlySet<string> = new Set(["A", "B", "C", "D", "F"]);
@@ -37,8 +30,8 @@ function isBaseline(value: unknown): value is Baseline {
   if (
     typeof obj["couplingScore"] !== "number" ||
     typeof obj["cycleCount"] !== "number" ||
-    typeof obj["godFileCount"] !== "number" ||
-    typeof obj["complexFnCount"] !== "number" ||
+    typeof obj["godFileRatio"] !== "number" ||
+    typeof obj["complexFnRatio"] !== "number" ||
     typeof obj["maxDepth"] !== "number"
   ) {
     return false;
@@ -54,17 +47,7 @@ function isBaseline(value: unknown): value is Baseline {
   }
 
   const grades = dg as Record<string, unknown>;
-  const requiredDimensions = [
-    "cycles",
-    "coupling",
-    "depth",
-    "godFiles",
-    "complexFn",
-    "levelization",
-    "blastRadius",
-  ];
-
-  return requiredDimensions.every((key) => isGrade(grades[key]));
+  return DIMENSION_NAMES.every((key) => isGrade(grades[key]));
 }
 
 const GRADE_ORDER: readonly Grade[] = ["A", "B", "C", "D", "F"];
@@ -75,22 +58,19 @@ function gradeIndex(grade: Grade): number {
 
 function extractBaseline(health: HealthReport): Baseline {
   const d = health.dimensions;
+  const dimensionGrades: Record<string, Grade> = {};
+  for (const name of DIMENSION_NAMES) {
+    dimensionGrades[name] = d[name].grade;
+  }
+
   return {
     couplingScore: d.coupling.rawValue,
     cycleCount: d.cycles.rawValue,
-    godFileCount: d.godFiles.rawValue,
-    complexFnCount: d.complexFn.rawValue,
+    godFileRatio: d.godFiles.rawValue,
+    complexFnRatio: d.complexFn.rawValue,
     maxDepth: d.depth.rawValue,
     compositeGrade: health.compositeGrade,
-    dimensionGrades: {
-      cycles: d.cycles.grade,
-      coupling: d.coupling.grade,
-      depth: d.depth.grade,
-      godFiles: d.godFiles.grade,
-      complexFn: d.complexFn.grade,
-      levelization: d.levelization.grade,
-      blastRadius: d.blastRadius.grade,
-    },
+    dimensionGrades,
   };
 }
 
@@ -165,15 +145,15 @@ export function compareBaseline(rootDir: string): {
     );
   }
 
-  if (current.godFileCount > baseline.godFileCount) {
+  if (current.godFileRatio > baseline.godFileRatio) {
     degradations.push(
-      `god file count increased: ${baseline.godFileCount} -> ${current.godFileCount}`,
+      `god file ratio increased: ${baseline.godFileRatio} -> ${current.godFileRatio}`,
     );
   }
 
-  if (current.complexFnCount > baseline.complexFnCount) {
+  if (current.complexFnRatio > baseline.complexFnRatio) {
     degradations.push(
-      `complex function count increased: ${baseline.complexFnCount} -> ${current.complexFnCount}`,
+      `complex function ratio increased: ${baseline.complexFnRatio} -> ${current.complexFnRatio}`,
     );
   }
 

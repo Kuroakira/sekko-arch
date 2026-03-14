@@ -9,6 +9,7 @@ import type {
   ImportEdge,
   Snapshot,
 } from "../types/index.js";
+import { DIMENSION_NAMES } from "../dimensions.js";
 
 export function makeDimension(
   name: DimensionName,
@@ -19,33 +20,35 @@ export function makeDimension(
   return { name, rawValue, grade, details };
 }
 
+const DEFAULT_RAW_VALUES: Readonly<Record<DimensionName, number>> = {
+  cycles: 0,
+  coupling: 0.15,
+  depth: 3,
+  godFiles: 0,
+  complexFn: 0.02,
+  levelization: 0,
+  blastRadius: 0.08,
+};
+
 export function makeAllDimensionGrades(
   grade: Grade,
 ): DimensionGrades {
-  return {
-    cycles: makeDimension("cycles", 0, grade),
-    coupling: makeDimension("coupling", 0, grade),
-    depth: makeDimension("depth", 0, grade),
-    godFiles: makeDimension("godFiles", 0, grade),
-    complexFn: makeDimension("complexFn", 0, grade),
-    levelization: makeDimension("levelization", 0, grade),
-    blastRadius: makeDimension("blastRadius", 0, grade),
-  };
+  const result = {} as Record<DimensionName, DimensionResult>;
+  for (const name of DIMENSION_NAMES) {
+    result[name] = makeDimension(name, 0, grade);
+  }
+  return result as DimensionGrades;
 }
 
 export function makeHealth(
   overrides?: Partial<HealthReport>,
 ): HealthReport {
+  const dimensions = {} as Record<DimensionName, DimensionResult>;
+  for (const name of DIMENSION_NAMES) {
+    dimensions[name] = makeDimension(name, DEFAULT_RAW_VALUES[name], "A");
+  }
   return {
-    dimensions: {
-      cycles: makeDimension("cycles", 0, "A"),
-      coupling: makeDimension("coupling", 0.15, "A"),
-      depth: makeDimension("depth", 3, "A"),
-      godFiles: makeDimension("godFiles", 0, "A"),
-      complexFn: makeDimension("complexFn", 0.02, "A"),
-      levelization: makeDimension("levelization", 0, "A"),
-      blastRadius: makeDimension("blastRadius", 0.08, "A"),
-    },
+    dimensions: dimensions as DimensionGrades,
     compositeGrade: "A",
     fileCount: 42,
     scanDurationMs: 150,

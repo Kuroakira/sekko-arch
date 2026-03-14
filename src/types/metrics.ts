@@ -18,15 +18,9 @@ export interface DimensionResult {
   readonly details?: Record<string, unknown>;
 }
 
-export interface DimensionGrades {
-  readonly cycles: DimensionResult;
-  readonly coupling: DimensionResult;
-  readonly depth: DimensionResult;
-  readonly godFiles: DimensionResult;
-  readonly complexFn: DimensionResult;
-  readonly levelization: DimensionResult;
-  readonly blastRadius: DimensionResult;
-}
+export type DimensionGrades = {
+  readonly [K in DimensionName]: DimensionResult;
+};
 
 export interface HealthReport {
   readonly dimensions: DimensionGrades;

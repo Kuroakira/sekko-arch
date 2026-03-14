@@ -27,4 +27,10 @@ export {
   isSameModule,
 } from "./module-boundary.js";
 
+export { buildMetricContext } from "./context.js";
+export type { MetricContext } from "./context.js";
+
+export { METRIC_COMPUTATIONS } from "./registry.js";
+export type { MetricComputation } from "./registry.js";
+
 export { computeHealth } from "./health.js";

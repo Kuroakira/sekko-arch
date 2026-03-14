@@ -1,18 +1,15 @@
 import type { HealthReport } from "../../types/metrics.js";
+import { DIMENSION_REGISTRY } from "../../dimensions.js";
 
 export function formatJson(report: HealthReport): string {
-  const { dimensions } = report;
+  const dimensions: Record<string, { rawValue: number; grade: string }> = {};
+  for (const config of DIMENSION_REGISTRY) {
+    const dim = report.dimensions[config.name];
+    dimensions[config.name] = { rawValue: dim.rawValue, grade: dim.grade };
+  }
 
   const output = {
-    dimensions: {
-      cycles: { rawValue: dimensions.cycles.rawValue, grade: dimensions.cycles.grade },
-      coupling: { rawValue: dimensions.coupling.rawValue, grade: dimensions.coupling.grade },
-      depth: { rawValue: dimensions.depth.rawValue, grade: dimensions.depth.grade },
-      godFiles: { rawValue: dimensions.godFiles.rawValue, grade: dimensions.godFiles.grade },
-      complexFn: { rawValue: dimensions.complexFn.rawValue, grade: dimensions.complexFn.grade },
-      levelization: { rawValue: dimensions.levelization.rawValue, grade: dimensions.levelization.grade },
-      blastRadius: { rawValue: dimensions.blastRadius.rawValue, grade: dimensions.blastRadius.grade },
-    },
+    dimensions,
     compositeGrade: report.compositeGrade,
     metadata: {
       fileCount: report.fileCount,
