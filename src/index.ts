@@ -19,3 +19,5 @@ export type {
   RuleViolation,
   RuleCheckResult,
 } from "./types/index.js";
+
+export type { PipelineResult } from "./cli/scan.js";

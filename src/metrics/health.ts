@@ -69,11 +69,13 @@ function buildFoundationFiles(
 function makeDimensionResult(
   name: DimensionResult["name"],
   rawValue: number,
+  details?: Record<string, unknown>,
 ): DimensionResult {
   return {
     name,
     rawValue,
     grade: gradeDimension(name, rawValue),
+    details,
   };
 }
 
@@ -113,18 +115,39 @@ export function computeHealth(snapshot: Snapshot): HealthReport {
   );
 
   const dimensions: DimensionGrades = {
-    cycles: makeDimensionResult("cycles", cycleResult.cycleCount),
-    coupling: makeDimensionResult("coupling", couplingResult.score),
-    depth: makeDimensionResult("depth", depthResult.maxDepth),
-    godFiles: makeDimensionResult("godFiles", godFilesResult.ratio),
-    complexFn: makeDimensionResult("complexFn", complexFnRatio),
+    cycles: makeDimensionResult("cycles", cycleResult.cycleCount, {
+      cycles: cycleResult.cycles,
+    }),
+    coupling: makeDimensionResult("coupling", couplingResult.score, {
+      crossModuleEdges: couplingResult.crossModuleEdges,
+      crossModuleToUnstable: couplingResult.crossModuleToUnstable,
+    }),
+    depth: makeDimensionResult("depth", depthResult.maxDepth, {
+      deepestPath: depthResult.deepestPath,
+    }),
+    godFiles: makeDimensionResult("godFiles", godFilesResult.ratio, {
+      files: godFilesResult.godFiles,
+      count: godFilesResult.count,
+    }),
+    complexFn: makeDimensionResult("complexFn", complexFnRatio, {
+      totalFunctions: allFunctions.length,
+      complexCount: allFunctions.filter((fn) => fn.cc > 15).length,
+    }),
     levelization: makeDimensionResult(
       "levelization",
       levelizationResult.violationRatio,
+      {
+        violations: levelizationResult.violations,
+        totalEdges: levelizationResult.totalEdges,
+      },
     ),
     blastRadius: makeDimensionResult(
       "blastRadius",
       blastRadiusResult.maxBlastRadiusRatio,
+      {
+        maxBlastRadius: blastRadiusResult.maxBlastRadius,
+        totalFiles: snapshot.totalFiles,
+      },
     ),
   };
 

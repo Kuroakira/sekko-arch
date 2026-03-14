@@ -8,7 +8,12 @@ import { computeHealth } from "../metrics/index.js";
 import { formatTable } from "./formatters/table.js";
 import { formatJson } from "./formatters/json.js";
 
-export function executePipeline(rootDir: string): HealthReport {
+export interface PipelineResult {
+  readonly snapshot: Snapshot;
+  readonly health: HealthReport;
+}
+
+export function executePipeline(rootDir: string): PipelineResult {
   const absoluteRoot = resolve(rootDir);
 
   const files = scanFiles(absoluteRoot);
@@ -39,7 +44,8 @@ export function executePipeline(rootDir: string): HealthReport {
     importGraph: graph,
   };
 
-  return computeHealth(snapshot);
+  const health = computeHealth(snapshot);
+  return { snapshot, health };
 }
 
 export function runScan(
@@ -47,10 +53,10 @@ export function runScan(
   options: { readonly format: string },
 ): void {
   const absolutePath = resolve(path);
-  const report = executePipeline(absolutePath);
+  const { health } = executePipeline(absolutePath);
 
   const output =
-    options.format === "json" ? formatJson(report) : formatTable(report);
+    options.format === "json" ? formatJson(health) : formatTable(health);
 
   console.log(output);
 }

@@ -21,25 +21,33 @@ function createFixtureDir(): string {
 }
 
 describe("executePipeline", () => {
+  it("returns PipelineResult with health and snapshot", () => {
+    const dir = createFixtureDir();
+    const result = executePipeline(dir);
+
+    expect(result).toHaveProperty("health");
+    expect(result).toHaveProperty("snapshot");
+  });
+
   it("returns a HealthReport with correct fileCount", () => {
     const dir = createFixtureDir();
-    const report = executePipeline(dir);
+    const { health } = executePipeline(dir);
 
-    expect(report.fileCount).toBe(2);
+    expect(health.fileCount).toBe(2);
   });
 
   it("returns a valid compositeGrade", () => {
     const dir = createFixtureDir();
-    const report = executePipeline(dir);
+    const { health } = executePipeline(dir);
 
-    expect(["A", "B", "C", "D", "F"]).toContain(report.compositeGrade);
+    expect(["A", "B", "C", "D", "F"]).toContain(health.compositeGrade);
   });
 
   it("returns all seven dimensions", () => {
     const dir = createFixtureDir();
-    const report = executePipeline(dir);
+    const { health } = executePipeline(dir);
 
-    const dimensionNames = Object.keys(report.dimensions);
+    const dimensionNames = Object.keys(health.dimensions);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
     expect(dimensionNames).toContain("depth");
@@ -51,9 +59,19 @@ describe("executePipeline", () => {
 
   it("records scanDurationMs as a positive number", () => {
     const dir = createFixtureDir();
-    const report = executePipeline(dir);
+    const { health } = executePipeline(dir);
 
-    expect(report.scanDurationMs).toBeGreaterThanOrEqual(0);
+    expect(health.scanDurationMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("returns snapshot with files and importGraph", () => {
+    const dir = createFixtureDir();
+    const { snapshot } = executePipeline(dir);
+
+    expect(snapshot.files).toHaveLength(2);
+    expect(snapshot.importGraph).toHaveProperty("edges");
+    expect(snapshot.importGraph).toHaveProperty("adjacency");
+    expect(snapshot.importGraph).toHaveProperty("reverseAdjacency");
   });
 });
 

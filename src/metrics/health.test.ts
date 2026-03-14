@@ -190,6 +190,73 @@ describe("computeHealth", () => {
     expect(report.dimensions.blastRadius.grade).toBe("A");
   });
 
+  it("populates details for cycles dimension", () => {
+    const files = [
+      makeFile("src/a/foo.ts"),
+      makeFile("src/b/bar.ts"),
+      makeFile("src/c/baz.ts"),
+    ];
+    const edges: ImportEdge[] = [
+      { fromFile: "src/a/foo.ts", toFile: "src/b/bar.ts" },
+      { fromFile: "src/b/bar.ts", toFile: "src/c/baz.ts" },
+      { fromFile: "src/c/baz.ts", toFile: "src/a/foo.ts" },
+    ];
+    const snapshot = makeSnapshot(files, edges);
+
+    const report = computeHealth(snapshot);
+
+    expect(report.dimensions.cycles.details).toBeDefined();
+    const details = report.dimensions.cycles.details as {
+      cycles: string[][];
+    };
+    expect(details.cycles).toHaveLength(1);
+    expect(details.cycles[0]).toHaveLength(3);
+  });
+
+  it("populates details for godFiles dimension", () => {
+    // Create a file with fan-out > 15 (non-entry-point)
+    const targets: FileNode[] = [];
+    const edges: ImportEdge[] = [];
+    for (let i = 0; i < 16; i++) {
+      const target = makeFile(`src/lib/dep${i}.ts`);
+      targets.push(target);
+      edges.push({
+        fromFile: "src/app/god.ts",
+        toFile: target.path,
+      });
+    }
+    const godFile = makeFile("src/app/god.ts");
+    const files = [godFile, ...targets];
+    const snapshot = makeSnapshot(files, edges);
+
+    const report = computeHealth(snapshot);
+
+    expect(report.dimensions.godFiles.details).toBeDefined();
+    const details = report.dimensions.godFiles.details as {
+      files: string[];
+      count: number;
+    };
+    expect(details.files).toContain("src/app/god.ts");
+    expect(details.count).toBeGreaterThanOrEqual(1);
+  });
+
+  it("populates details for all dimensions", () => {
+    const files = [
+      makeFile("src/auth/login.ts"),
+      makeFile("src/utils/helpers.ts"),
+    ];
+    const edges: ImportEdge[] = [
+      { fromFile: "src/auth/login.ts", toFile: "src/utils/helpers.ts" },
+    ];
+    const snapshot = makeSnapshot(files, edges);
+
+    const report = computeHealth(snapshot);
+
+    for (const dim of Object.values(report.dimensions)) {
+      expect(dim.details).toBeDefined();
+    }
+  });
+
   it("populates fileCount from snapshot", () => {
     const files = [
       makeFile("src/a.ts"),
