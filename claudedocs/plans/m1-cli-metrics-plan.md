@@ -14,7 +14,7 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 |-------|------|-------|-------------|
 | A | Foundation (done) | 1-2 | Project init, dependencies |
 | B | Type System (done) | 3-5 | Core, snapshot, metrics, rules types |
-| C | Scanner Pipeline | 6-10 | Utils, file collection, line counting |
+| C | Scanner Pipeline (done) | 6-10 | Utils, file collection, line counting |
 | D | Parser Pipeline | 11-15 | tree-sitter setup, extraction, complexity |
 | E | Graph & Metrics | 16-25 | Import resolution, graph, all 7 metrics |
 | F | Grading & Output | 26-31 | Grading, CLI commands, formatters |
@@ -24,7 +24,7 @@ The implementation follows the 6-phase pipeline (File Collection -> Line Countin
 ### Dependency Flow
 
 ```
-A (done) → B (done) → C → D → E → F → G → H
+A (done) → B (done) → C (done) → D → E → F → G → H
                               ↘ F (grading is independent of rules)
 ```
 
@@ -93,9 +93,9 @@ A (done) → B (done) → C → D → E → F → G → H
 - **Tests**: Type compilation check
 - **Acceptance criteria**: All report types match design doc specification
 
-### Group C: Scanner Pipeline
+### Group C: Scanner Pipeline (done)
 
-### Task 6: Utility - module_of and Glob Matching
+### [DONE] Task 6: Utility - module_of and Glob Matching (completed 2026-03-14T10:07)
 
 - **Description**: Implement `moduleOf(path)` that extracts depth-2 directory (e.g., `src/auth/login.ts` -> `src/auth`). Implement `globMatch(pattern, path)` supporting `*`, `**`, and prefix matching for the rules engine.
 - **Files**: `src/utils/module-of.ts`, `src/utils/glob.ts`
@@ -103,7 +103,7 @@ A (done) → B (done) → C → D → E → F → G → H
 - **Tests**: Unit tests for moduleOf with various path depths, globMatch with all pattern types
 - **Acceptance criteria**: moduleOf matches sentrux's behavior (depth-2 boundary), globMatch handles `dir/*`, `dir/**`, `*.ext`, exact match, prefix match
 
-### Task 7: File Scanner - git ls-files
+### [DONE] Task 7: File Scanner - git ls-files (completed 2026-03-14T10:10)
 
 - **Description**: Implement file collection using `child_process.execSync('git ls-files')`. Parse output, filter to `.ts` and `.tsx` extensions. Return array of relative paths.
 - **Files**: `src/scanner/git-files.ts`
@@ -111,7 +111,7 @@ A (done) → B (done) → C → D → E → F → G → H
 - **Tests**: Unit test with mock execSync, integration test on actual git repo
 - **Acceptance criteria**: Returns only tracked TS/TSX files, handles non-git directories gracefully (returns null)
 
-### Task 8: File Scanner - Filesystem Walk Fallback
+### [DONE] Task 8: File Scanner - Filesystem Walk Fallback (completed 2026-03-14T10:13)
 
 - **Description**: Implement recursive filesystem walk for non-git directories. Respect .gitignore patterns if present. Filter to `.ts`/`.tsx`. Exclude `node_modules`, `dist`, `.git` by default.
 - **Files**: `src/scanner/fs-walk.ts`
@@ -119,7 +119,7 @@ A (done) → B (done) → C → D → E → F → G → H
 - **Tests**: Unit test with temp directory structure
 - **Acceptance criteria**: Correctly walks directories, skips excluded paths, handles symlinks safely
 
-### Task 9: File Scanner - Line Counter
+### [DONE] Task 9: File Scanner - Line Counter (completed 2026-03-14T10:18)
 
 - **Description**: Implement line counting that classifies each line as code, comment, or blank. Handle TypeScript comment styles: `//` single-line, `/* */` multi-line blocks. Use a state machine to track block comment state across lines.
 - **Files**: `src/scanner/line-counter.ts`
@@ -127,7 +127,7 @@ A (done) → B (done) → C → D → E → F → G → H
 - **Tests**: Unit tests with sample TS content including edge cases (string literals containing //, nested comments, template literals)
 - **Acceptance criteria**: Accurate classification matching common tools, handles all TS comment patterns
 
-### Task 10: File Scanner - Orchestrator
+### [DONE] Task 10: File Scanner - Orchestrator (completed 2026-03-14T10:21)
 
 - **Description**: Wire together git-files (or fs-walk fallback) with line counting. Build `FileNode[]` with path, name, lang, and line counts populated. Detect language from extension.
 - **Files**: `src/scanner/index.ts`
