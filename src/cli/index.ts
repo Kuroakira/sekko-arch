@@ -6,6 +6,7 @@ import { Command, Option } from "commander";
 import { runScan } from "./scan.js";
 import { runCheck } from "./check.js";
 import { runGate } from "./gate.js";
+import { runMcpServer } from "../mcp/server.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -50,6 +51,17 @@ export function createProgram(): Command {
         runGate(gatePath, { save: opts.save, include: opts.include });
       },
     );
+
+  program
+    .command("mcp")
+    .description("Start MCP server for AI agent integration")
+    .action(() => {
+      runMcpServer().catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`MCP server error: ${message}`);
+        process.exit(1);
+      });
+    });
 
   return program;
 }
