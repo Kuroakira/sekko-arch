@@ -1,0 +1,24 @@
+# Design Axes Table: archana M1
+
+| Axis | Choices | Verdict | Rationale |
+|------|---------|---------|-----------|
+| File scanner: child_process vs library | A: `child_process.execSync('git ls-files')` / B: simple-git library | A: child_process | No added dependency. git ls-files is a single synchronous call. simple-git adds 2MB for one command. sentrux uses the same approach (std::process::Command). |
+| Line counting: streaming vs bulk read | A: Read entire file into memory, split lines / B: Streaming line-by-line with readline | A: Bulk read | TS files are typically <10KB. At 5,000 files that's ~50MB peak — well within Node limits. Streaming adds complexity for no benefit. sentrux reads entire files. |
+| Comment detection: regex vs state machine | A: Per-line regex (`//`, `/*`, `*/`) / B: Simple state machine tracking block comment state | B: State machine | Regex cannot correctly handle `/* ... */` spanning multiple lines. State machine is 20 lines of code and handles all cases. |
+| tree-sitter binding: native vs WASM | A: tree-sitter native N-API / B: web-tree-sitter (WASM) | A: Native | Design doc mandates native for 3-5x speed advantage. WASM fallback is out of scope for M1 (risk mitigation for M2). |
+| tree-sitter query: S-expression queries vs manual AST walk | A: tree-sitter query language (.scm patterns) / B: Manual cursor-based AST traversal | A: Query language | Query patterns are declarative, composable, and match sentrux's approach. Manual traversal is fragile and verbose. |
+| Cyclomatic complexity: query-based vs AST walk | A: Count branch nodes via tree-sitter query captures / B: Walk AST manually counting if/for/while/case/&&/|| | A: Query captures | One query pattern captures all branch nodes. Count captures per function = CC. Matches extended CC (Myers 1977) including boolean operators. |
+| Import resolution: oxc-resolver | No alternative considered | oxc-resolver | Design doc mandates. 28x faster than enhanced-resolve. Handles tsconfig paths, barrel files, package exports. Sync API. |
+| Graph data structure: adjacency list vs edge list | A: Map<string, Set<string>> adjacency list / B: Array<{from, to}> edge list | Both | Store edges as `ImportEdge[]` for serialization/iteration. Build adjacency Map on demand for graph algorithms. sentrux does the same. |
+| SCC algorithm: Tarjan vs Kosaraju | A: Iterative Tarjan / B: Kosaraju (two-pass DFS) | A: Tarjan | Single DFS pass vs two. sentrux metrics/mod.rs uses Tarjan for cycle detection. Iterative to avoid stack overflow. |
+| Levelization: Kahn topological sort | No alternative | Kahn's algorithm | Design doc specifies. O(V+E). Natural fit for computing per-node levels. sentrux uses Kahn via SCC DAG. |
+| Blast radius: full BFS vs sampling | A: BFS from every node / B: Sample for >5000 nodes | A: Full BFS | M1 targets 5,000 files max. Full BFS is O(V*(V+E)), feasible. Sampling adds complexity without benefit at this scale. |
+| Module boundary: depth-2 directory | No alternative for M1 | Depth-2 directory | Design doc specifies. `src/auth/` -> module "src/auth". Simple, language-agnostic. Warn on degenerate cases. Configurable boundary is M2+. |
+| TOML parser: @iarna/toml vs smol-toml | A: @iarna/toml (full TOML 1.0) / B: smol-toml (lightweight) | B: smol-toml | smol-toml is smaller (15KB vs 80KB), zero dependencies, full TOML 1.0 support. Actively maintained. |
+| CLI framework: commander vs yargs | A: commander.js / B: yargs | A: commander | Design doc specifies. Smaller footprint, cleaner API for subcommands. Industry standard for Node CLIs. |
+| Output table: cli-table3 vs manual formatting | A: cli-table3 library / B: Manual string formatting with padding | B: Manual formatting | The output table is a fixed 7-row metrics table + composite. Manual formatting avoids a dependency for 30 lines of padding code. |
+| Baseline format: JSON | No alternative | JSON | Machine-generated data, no comments needed. JSON is native to Node. Matches sentrux's approach. |
+| Glob matching: minimatch vs manual | A: minimatch library / B: Manual glob (*, **, prefix) | B: Manual | Rules engine needs only `*`, `**`, and prefix matching. 30 lines of code vs adding a dependency. sentrux uses manual glob_match. |
+| Parallelization: single-threaded vs worker_threads | A: Single-threaded / B: worker_threads for parsing | A: Single-threaded first | Review finding: YAGNI. Start single-threaded, benchmark. Add worker_threads only if 15-second target is missed. Interface boundary (FileNode[] in/out) allows easy migration. |
+| Build tool: tsup vs tsc | A: tsup (esbuild-based) / B: tsc --outDir | A: tsup | Design doc specifies. Fast builds, handles native addons. Single executable output for CLI distribution. |
+| Test framework: vitest | No alternative | vitest | Design doc specifies. 10-20x faster than Jest. Native ESM + TypeScript support. |
