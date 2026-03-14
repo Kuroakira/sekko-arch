@@ -1,14 +1,24 @@
 import type { FanMaps } from "./fan-maps.js";
 import { HOTSPOT_SCORE_THRESHOLD } from "./thresholds.js";
 
-export function computeHotspotRatio(fanMaps: FanMaps): number {
+export interface HotspotFile {
+  readonly file: string;
+  readonly score: number;
+}
+
+export interface HotspotResult {
+  readonly ratio: number;
+  readonly hotspotFiles: readonly HotspotFile[];
+}
+
+export function computeHotspotRatio(fanMaps: FanMaps): HotspotResult {
   const allFiles = new Set<string>([
     ...fanMaps.fanIn.keys(),
     ...fanMaps.fanOut.keys(),
   ]);
-  if (allFiles.size === 0) return 0;
+  if (allFiles.size === 0) return { ratio: 0, hotspotFiles: [] };
 
-  let hotspotCount = 0;
+  const hotspotFiles: HotspotFile[] = [];
   for (const file of allFiles) {
     const fanIn = fanMaps.fanIn.get(file) ?? 0;
     const fanOut = fanMaps.fanOut.get(file) ?? 0;
@@ -16,9 +26,9 @@ export function computeHotspotRatio(fanMaps: FanMaps): number {
     const instability = total === 0 ? 0 : fanOut / total;
     const score = fanIn * instability;
     if (score >= HOTSPOT_SCORE_THRESHOLD) {
-      hotspotCount++;
+      hotspotFiles.push({ file, score });
     }
   }
 
-  return hotspotCount / allFiles.size;
+  return { ratio: hotspotFiles.length / allFiles.size, hotspotFiles };
 }

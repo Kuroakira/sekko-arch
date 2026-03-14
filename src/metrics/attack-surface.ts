@@ -1,3 +1,8 @@
+export interface AttackSurfaceResult {
+  readonly ratio: number;
+  readonly reachableCount: number;
+}
+
 /**
  * Computes attack surface as ratio of files reachable from entry points.
  * BFS from entry points through adjacency graph.
@@ -7,8 +12,9 @@ export function computeAttackSurface(
   adjacency: ReadonlyMap<string, readonly string[]>,
   entryPoints: ReadonlySet<string>,
   totalFiles: number,
-): number {
-  if (totalFiles === 0 || entryPoints.size === 0) return 0;
+): AttackSurfaceResult {
+  if (totalFiles === 0 || entryPoints.size === 0)
+    return { ratio: 0, reachableCount: 0 };
 
   const visited = new Set<string>();
   const queue: string[] = [...entryPoints];
@@ -29,5 +35,5 @@ export function computeAttackSurface(
     }
   }
 
-  return visited.size / totalFiles;
+  return { ratio: visited.size / totalFiles, reachableCount: visited.size };
 }

@@ -8,11 +8,16 @@ import type { FanMaps } from "./fan-maps.js";
  *   I = instability = fanOut / (fanIn + fanOut) per module
  * Returns maximum D across all modules.
  */
+export interface DistanceResult {
+  readonly maxDistance: number;
+  readonly worstModule: string;
+}
+
 export function computeDistanceFromMainSeq(
   files: readonly FileNode[],
   fanMaps: FanMaps,
   moduleAssignments: ReadonlyMap<string, string>,
-): number {
+): DistanceResult {
   const moduleFiles = new Map<string, FileNode[]>();
   for (const file of files) {
     const mod = moduleAssignments.get(file.path);
@@ -27,8 +32,9 @@ export function computeDistanceFromMainSeq(
   }
 
   let maxDistance = 0;
+  let worstModule = "";
 
-  for (const moduleFileList of moduleFiles.values()) {
+  for (const [mod, moduleFileList] of moduleFiles) {
     let abstractCount = 0;
     let totalClasses = 0;
 
@@ -59,8 +65,11 @@ export function computeDistanceFromMainSeq(
     const instability = total === 0 ? 0 : fanOut / total;
 
     const distance = Math.abs(abstractness + instability - 1);
-    maxDistance = Math.max(maxDistance, distance);
+    if (distance > maxDistance) {
+      maxDistance = distance;
+      worstModule = mod;
+    }
   }
 
-  return maxDistance;
+  return { maxDistance, worstModule };
 }

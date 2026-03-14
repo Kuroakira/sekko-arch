@@ -3,12 +3,14 @@ import { computeAttackSurface } from "./attack-surface.js";
 
 describe("computeAttackSurface", () => {
   it("returns 0 for empty graph", () => {
-    expect(computeAttackSurface(new Map(), new Set(), 0)).toBe(0);
+    const result = computeAttackSurface(new Map(), new Set(), 0);
+    expect(result.ratio).toBe(0);
+    expect(result.reachableCount).toBe(0);
   });
 
   it("returns 0 when no entry points", () => {
     const adj = new Map([["a.ts", ["b.ts"]]]);
-    expect(computeAttackSurface(adj, new Set(), 2)).toBe(0);
+    expect(computeAttackSurface(adj, new Set(), 2).ratio).toBe(0);
   });
 
   it("returns ratio of reachable files", () => {
@@ -20,7 +22,9 @@ describe("computeAttackSurface", () => {
     ]);
     const entry = new Set(["src/index.ts"]);
     // Reachable: index → a → b = 3/4
-    expect(computeAttackSurface(adj, entry, 4)).toBe(0.75);
+    const result = computeAttackSurface(adj, entry, 4);
+    expect(result.ratio).toBe(0.75);
+    expect(result.reachableCount).toBe(3);
   });
 
   it("returns 1.0 when all files reachable", () => {
@@ -28,7 +32,7 @@ describe("computeAttackSurface", () => {
       ["src/index.ts", ["src/a.ts", "src/b.ts"]],
     ]);
     const entry = new Set(["src/index.ts"]);
-    expect(computeAttackSurface(adj, entry, 3)).toBeCloseTo(1.0);
+    expect(computeAttackSurface(adj, entry, 3).ratio).toBeCloseTo(1.0);
   });
 
   it("handles multiple entry points", () => {
@@ -38,6 +42,6 @@ describe("computeAttackSurface", () => {
     ]);
     const entry = new Set(["src/index.ts", "src/cli.ts"]);
     // Reachable: index, a, cli, b = 4/4
-    expect(computeAttackSurface(adj, entry, 4)).toBe(1.0);
+    expect(computeAttackSurface(adj, entry, 4).ratio).toBe(1.0);
   });
 });

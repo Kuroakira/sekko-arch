@@ -157,4 +157,101 @@ describe("formatTable", () => {
       .filter((l) => l.includes("\u2500"));
     expect(separatorLines.length).toBeGreaterThanOrEqual(2);
   });
+
+  it("does not show problem areas when all grades are A or B", () => {
+    const output = formatTable(makeHealth());
+    expect(output).not.toContain("Problem Areas");
+  });
+
+  it("shows problem areas section for grade C and below", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        cycles: makeDimension("cycles", 5, "D", {
+          cycles: [["src/a.ts", "src/b.ts", "src/a.ts"]],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("Problem Areas");
+    expect(output).toContain("Cycles");
+    expect(output).toContain("src/a.ts");
+  });
+
+  it("does not show A or B dimensions in problem areas", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        cycles: makeDimension("cycles", 5, "D", {
+          cycles: [["src/a.ts", "src/b.ts"]],
+        }),
+        coupling: makeDimension("coupling", 0.1, "A", {
+          crossModuleEdges: 2,
+          crossModuleToUnstable: 0,
+        }),
+      },
+    });
+    const output = formatTable(report);
+    const problemSection = output.split("Problem Areas")[1] ?? "";
+    expect(problemSection).toContain("Cycles");
+    expect(problemSection).not.toContain("Coupling");
+  });
+
+  it("truncates items beyond 5 with '...and N more'", () => {
+    const files = Array.from({ length: 8 }, (_, i) => `src/file${i}.ts`);
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        deadCode: makeDimension("deadCode", 0.5, "F", { files }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/file0.ts");
+    expect(output).toContain("src/file4.ts");
+    expect(output).not.toContain("src/file5.ts");
+    expect(output).toContain("...and 3 more");
+  });
+
+  it("formats complexFn details with file:name (CC=N)", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        complexFn: makeDimension("complexFn", 0.5, "F", {
+          totalFunctions: 10,
+          complexCount: 5,
+          complexFunctions: [
+            { file: "src/app/god.ts", name: "heavyFunc", cc: 28 },
+          ],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/app/god.ts:heavyFunc (CC=28)");
+  });
+
+  it("formats cycle details as path", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        cycles: makeDimension("cycles", 3, "C", {
+          cycles: [["src/a.ts", "src/b.ts", "src/c.ts"]],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/a.ts \u2192 src/b.ts \u2192 src/c.ts");
+  });
+
+  it("formats largeFiles details with line count", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        largeFiles: makeDimension("largeFiles", 0.5, "F", {
+          files: [{ file: "src/big.ts", lines: 800 }],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/big.ts (800 lines)");
+  });
 });

@@ -9,7 +9,8 @@ describe("computeDeadCodeRatio", () => {
       new Set(),
       [],
     );
-    expect(result).toBe(0);
+    expect(result.ratio).toBe(0);
+    expect(result.deadFiles).toHaveLength(0);
   });
 
   it("returns 0 when all files are referenced", () => {
@@ -20,7 +21,7 @@ describe("computeDeadCodeRatio", () => {
     const reverseAdj = new Map([["src/a.ts", ["src/b.ts"]]]);
 
     const result = computeDeadCodeRatio(reverseAdj, new Set(), [fileA]);
-    expect(result).toBe(0);
+    expect(result.ratio).toBe(0);
   });
 
   it("returns correct ratio for unreferenced files", () => {
@@ -38,7 +39,8 @@ describe("computeDeadCodeRatio", () => {
     ]);
 
     const result = computeDeadCodeRatio(reverseAdj, new Set(), [fileA, fileB]);
-    expect(result).toBeCloseTo(1 / 3);
+    expect(result.ratio).toBeCloseTo(1 / 3);
+    expect(result.deadFiles).toContain("src/b.ts");
   });
 
   it("excludes entry points from dead code", () => {
@@ -57,7 +59,9 @@ describe("computeDeadCodeRatio", () => {
     const entryPoints = new Set(["src/index.ts"]);
 
     const result = computeDeadCodeRatio(reverseAdj, entryPoints, [fileIndex, fileA]);
-    expect(result).toBe(1 / 2);
+    expect(result.ratio).toBe(1 / 2);
+    expect(result.deadFiles).toContain("src/a.ts");
+    expect(result.deadFiles).not.toContain("src/index.ts");
   });
 
   it("returns 0 when files have no functions", () => {
@@ -68,6 +72,6 @@ describe("computeDeadCodeRatio", () => {
     });
 
     const result = computeDeadCodeRatio(new Map(), new Set(), [fileA, fileB]);
-    expect(result).toBe(0);
+    expect(result.ratio).toBe(0);
   });
 });

@@ -1,5 +1,11 @@
 import type { ImportEdge } from "../types/snapshot.js";
 
+export interface CohesionResult {
+  readonly rawValue: number;
+  readonly worstModule: string;
+  readonly worstCohesion: number;
+}
+
 /**
  * Computes module cohesion as 1 - minCohesion across all modules.
  * Cohesion per module = intra-module edges / (N - 1) where N = file count.
@@ -8,7 +14,7 @@ import type { ImportEdge } from "../types/snapshot.js";
 export function computeCohesion(
   edges: readonly ImportEdge[],
   moduleAssignments: ReadonlyMap<string, string>,
-): number {
+): CohesionResult {
   const moduleFiles = new Map<string, Set<string>>();
   for (const [file, mod] of moduleAssignments) {
     const existing = moduleFiles.get(mod);
@@ -20,13 +26,11 @@ export function computeCohesion(
   }
 
   let minCohesion = 1.0;
+  let worstModule = "";
   let hasMultiFileModule = false;
 
   for (const [mod, files] of moduleFiles) {
     if (files.size < 2) continue;
-    // Skip root-level modules (no "/" in module name) — these contain
-    // unrelated files (e.g., constants.ts, index.ts) that share a directory
-    // but aren't conceptually a cohesive module.
     if (!mod.includes("/")) continue;
     hasMultiFileModule = true;
 
@@ -40,10 +44,14 @@ export function computeCohesion(
       }
     }
 
-    const cohesion = intraEdges / (files.size - 1);
-    minCohesion = Math.min(minCohesion, cohesion);
+    // Clamp to 1.0 — intraEdges can exceed N-1 in directed graphs
+    const cohesion = Math.min(intraEdges / (files.size - 1), 1.0);
+    if (cohesion < minCohesion) {
+      minCohesion = cohesion;
+      worstModule = mod;
+    }
   }
 
-  if (!hasMultiFileModule) return 0;
-  return 1 - minCohesion;
+  if (!hasMultiFileModule) return { rawValue: 0, worstModule: "", worstCohesion: 0 };
+  return { rawValue: 1 - minCohesion, worstModule, worstCohesion: minCohesion };
 }
