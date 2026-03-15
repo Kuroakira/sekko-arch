@@ -2,8 +2,7 @@
   "mcpServers": {
     "sekko-arch": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/cli/index.js", "mcp"],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/cli/index.js", "mcp"]
     }
   }
 }
