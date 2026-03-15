@@ -1,0 +1,29 @@
+{
+  "couplingScore": 0.16853932584269662,
+  "cycleCount": 1,
+  "godFileRatio": 0,
+  "complexFnRatio": 0.038461538461538464,
+  "maxDepth": 11,
+  "compositeGrade": "C",
+  "dimensionGrades": {
+    "cycles": "B",
+    "coupling": "A",
+    "depth": "D",
+    "godFiles": "A",
+    "complexFn": "B",
+    "levelization": "B",
+    "blastRadius": "D",
+    "cohesion": "A",
+    "entropy": "A",
+    "cognitiveComplexity": "A",
+    "hotspots": "A",
+    "longFunctions": "A",
+    "largeFiles": "A",
+    "highParams": "A",
+    "duplication": "A",
+    "deadCode": "A",
+    "comments": "A",
+    "distanceFromMainSeq": "A",
+    "attackSurface": "A"
+  }
+}
