@@ -79,4 +79,48 @@ describe("E2E: self-scan", { timeout: 60000 }, () => {
       }
     });
   });
+
+  describe("evolution metrics sanity checks", () => {
+    const EVOLUTION_DIMS = [
+      "codeChurn",
+      "changeCoupling",
+      "busFactor",
+      "codeAge",
+    ] as const;
+
+    it("evolution metrics have rawValue between 0 and 1", () => {
+      for (const name of EVOLUTION_DIMS) {
+        const dim = health.dimensions[name];
+        expect(
+          dim.rawValue,
+          `${name} rawValue out of range: ${dim.rawValue}`,
+        ).toBeGreaterThanOrEqual(0);
+        expect(
+          dim.rawValue,
+          `${name} rawValue out of range: ${dim.rawValue}`,
+        ).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it("evolution metrics are not all grade F (thresholds are reasonable)", () => {
+      const fCount = EVOLUTION_DIMS.filter(
+        (name) => health.dimensions[name].grade === "F",
+      ).length;
+      expect(
+        fCount,
+        `All ${EVOLUTION_DIMS.length} evolution metrics are F — thresholds may be too strict`,
+      ).toBeLessThan(EVOLUTION_DIMS.length);
+    });
+
+    it("testCoverageGap rawValue is between 0 and 1", () => {
+      const dim = health.dimensions.testCoverageGap;
+      expect(dim.rawValue).toBeGreaterThanOrEqual(0);
+      expect(dim.rawValue).toBeLessThanOrEqual(1);
+    });
+
+    it("testCoverageGap is not F for a well-tested project", () => {
+      // sekko-arch has extensive tests; coverage gap should not be F
+      expect(health.dimensions.testCoverageGap.grade).not.toBe("F");
+    });
+  });
 });

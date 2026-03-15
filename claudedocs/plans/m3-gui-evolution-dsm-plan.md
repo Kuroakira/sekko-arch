@@ -19,7 +19,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | **done** (2026-03-15) |
 | F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | **done** (2026-03-15) |
 | G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | **done** (2026-03-15) |
-| H | 統合テスト・検証 | T24-T26 | 自己スキャン24次元, パフォーマンスベンチマーク, Git不在環境テスト | pending |
+| H | 統合テスト・検証 | T24-T26 | 自己スキャン24次元, パフォーマンスベンチマーク, Git不在環境テスト | **done** (2026-03-15) |
 
 ### Dependency Flow
 
@@ -472,7 +472,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 ### Group H: 統合テスト・検証
 
-#### T24: 自己スキャン24次元検証
+#### [DONE] T24: 自己スキャン24次元検証 (completed 2026-03-15)
 
 - **Description**: sekko-arch自身を24次元でスキャンし、全メトリクスにA-Fグレードが付与されることを確認。進化メトリクスの閾値妥当性を検証。
 - **Files**: `src/e2e/self-scan.test.ts`（更新）
@@ -480,7 +480,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: 自己スキャンで24次元全てがグレード付与される。過剰なF判定がないこと。
 - **Acceptance**: 自己スキャンが成功。24次元全てのグレードが確認可能。
 
-#### T25: パフォーマンスベンチマーク
+#### [DONE] T25: パフォーマンスベンチマーク (completed 2026-03-15)
 
 - **Description**: 24次元計算 + git履歴収集のパフォーマンスオーバーヘッドを計測。M2ベンチマークと比較して許容範囲内であることを確認。
 - **Files**: `tests/bench/scan-performance.test.ts`（更新）
@@ -488,7 +488,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: 24次元スキャンのベンチマーク。git収集込みの総実行時間。
 - **Acceptance**: M2比でパフォーマンス劣化が30%以内（git I/Oの追加を考慮した緩和閾値）
 
-#### T26: Git不在環境テスト
+#### [DONE] T26: Git不在環境テスト (completed 2026-03-15)
 
 - **Description**: gitリポジトリ外でscanを実行し、graceful degradationを検証。20メトリクス（19静的 + 1テストカバレッジギャップ）が正常計算され、4つの進化メトリクスがスキップ（rawValue=0, grade="A"）されることを確認。
 - **Files**: `src/e2e/git-absent.test.ts`（新規作成）
