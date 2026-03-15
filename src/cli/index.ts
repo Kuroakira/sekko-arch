@@ -7,6 +7,7 @@ import { runScan } from "./scan.js";
 import { runCheck } from "./check.js";
 import { runGate } from "./gate.js";
 import { runMcpServer } from "../mcp/server.js";
+import { runVisualize } from "./visualize.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -49,6 +50,24 @@ export function createProgram(): Command {
     .action(
       (gatePath: string, opts: { save: boolean; include?: string[] }) => {
         runGate(gatePath, { save: opts.save, include: opts.include });
+      },
+    );
+
+  program
+    .command("visualize")
+    .description("Generate HTML visualization report")
+    .argument("[path]", "path to scan", ".")
+    .option("--output <file>", "output file path", "sekko-arch-report.html")
+    .option("--include <dirs...>", "scan only specified directories")
+    .action(
+      (
+        vizPath: string,
+        cmdOpts: { output: string; include?: string[] },
+      ) => {
+        runVisualize(vizPath, {
+          output: cmdOpts.output,
+          include: cmdOpts.include,
+        });
       },
     );
 

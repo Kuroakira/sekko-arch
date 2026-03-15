@@ -37,3 +37,10 @@
 
 ## Task T17: E2Eテスト24次元対応
 - src/e2e/full-pipeline.test.ts — updated test descriptions 19→24
+
+## Task T18-T21: Web Visualization (Group F)
+- src/cli/html-generator.ts — HTML report generator (Treemap + DSM views)
+- src/cli/html-generator.test.ts — 11 tests for HTML generation
+- src/cli/visualize.ts — visualize subcommand implementation
+- src/cli/visualize.test.ts — 6 tests for visualize command
+- src/cli/index.ts — registered visualize subcommand

@@ -17,7 +17,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 | C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | **done** (2026-03-15) |
 | D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | **done** (2026-03-15) |
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | **done** (2026-03-15) |
-| F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | pending |
+| F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | **done** (2026-03-15) |
 | G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | pending |
 | H | 統合テスト・検証 | T24-T26 | 自己スキャン24次元, パフォーマンスベンチマーク, Git不在環境テスト | pending |
 
@@ -366,7 +366,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 ### Group F: Web可視化
 
-#### T18: `visualize`サブコマンド
+#### [DONE] T18: `visualize`サブコマンド (completed 2026-03-15)
 
 - **Description**: `src/cli/visualize.ts`に`runVisualize()`関数を実装。`executePipeline()`を呼び出し、PipelineResultの全データからHTMLを生成してファイルに書き出す。`src/cli/index.ts`に`visualize`コマンドを追加。
 - **Files**: `src/cli/visualize.ts`（新規作成）, `src/cli/index.ts`
@@ -382,7 +382,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - `--output`オプションの動作
 - **Acceptance**: `sekko-arch visualize .`で自己完結型HTMLが生成される
 
-#### T19: Treemap HTMLビュー
+#### [DONE] T19: Treemap HTMLビュー (completed 2026-03-15)
 
 - **Description**: `src/cli/html-generator.ts`にTreemapビューの生成ロジックを実装。ファイルサイズを面積、品質グレードを色で表現。D3.js CDN経由のscriptタグ。
 - **Files**: `src/cli/html-generator.ts`（新規作成）
@@ -401,7 +401,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - グレード→色マッピングの正しさ
 - **Acceptance**: 生成HTMLをブラウザで開いてTreemapが正常にレンダリングされる
 
-#### T20: DSM HTMLビュー
+#### [DONE] T20: DSM HTMLビュー (completed 2026-03-15)
 
 - **Description**: `src/cli/html-generator.ts`にDSMビューの生成ロジックを追加。モジュール単位のNxN依存行列を表示。
 - **Files**: `src/cli/html-generator.ts`
@@ -420,7 +420,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - 自己参照（同一モジュール内エッジ）の処理
 - **Acceptance**: 生成HTMLでDSMが正常にレンダリングされ、Treemapとタブ切り替え可能
 
-#### T21: HTML Generator統合テスト
+#### [DONE] T21: HTML Generator統合テスト (completed 2026-03-15)
 
 - **Description**: Treemap + DSMの両ビューを含む完全なHTMLの生成を検証。
 - **Files**: `src/cli/html-generator.test.ts`に追加
