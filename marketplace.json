@@ -1,0 +1,13 @@
+{
+  "name": "sekko-arch-marketplace",
+  "description": "Marketplace for sekko-arch architecture analysis plugin",
+  "plugins": [
+    {
+      "name": "sekko-arch",
+      "description": "Architecture analysis for TypeScript projects — scores A-F across 19 dimensions",
+      "repository": "https://github.com/Kuroakira/sekko-arch",
+      "version": "0.2.0",
+      "keywords": ["architecture", "typescript", "static-analysis", "code-quality", "mcp"]
+    }
+  ]
+}
