@@ -15,7 +15,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 | A | 型システム・基盤拡張 | T01-T05 | DimensionName 24メンバー化, categoryフィールド追加, EvolutionConfig, GitHistory型, テストヘルパー24次元対応 | **done** (ab22716, 2026-03-15) |
 | B | Git履歴モジュール | T06-T08 | `src/git/` — 型定義, git log収集・解析, パイプライン前段統合 | **done** (2026-03-15) |
 | C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | **done** (2026-03-15) |
-| D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | pending |
+| D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | **done** (2026-03-15) |
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | pending |
 | F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | pending |
 | G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | pending |
@@ -289,7 +289,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 ### Group D: テストカバレッジギャップ
 
-#### T13: テストファイル収集
+#### [DONE] T13: テストファイル収集 (completed 2026-03-15)
 
 - **Description**: `src/scanner/test-files.ts`にテストファイルのみを収集する関数を実装。`isTestFile()`の逆条件で、テストファイルのパスリストを返す。`isTestFile()`を`src/scanner/git-files.ts`からexportする。
 - **Files**: `src/scanner/test-files.ts`（新規作成）, `src/scanner/git-files.ts`（export追加）
@@ -305,7 +305,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - git不在環境: 空配列
 - **Acceptance**: テストファイルのパスリストが正しく返される
 
-#### T14: テストカバレッジギャップメトリクス
+#### [DONE] T14: テストカバレッジギャップメトリクス (completed 2026-03-15)
 
 - **Description**: テストファイルのimportを軽量解析し、既存ImportGraphと合成して推移的到達可能性を計算。到達不可能なソースファイルの比率を報告。
 - **Files**: `src/metrics/test-coverage-gap.ts`（新規作成）
