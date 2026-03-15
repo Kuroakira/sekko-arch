@@ -60,7 +60,7 @@ describe("E2E: MCP integration", () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  it("scan tool returns all 19 dimensions", async () => {
+  it("scan tool returns all 24 dimensions", async () => {
     const { client, transport } = await createMcpClient();
 
     try {

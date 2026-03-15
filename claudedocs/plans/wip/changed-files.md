@@ -21,3 +21,19 @@
 ## Task T14: テストカバレッジギャップメトリクス
 - src/metrics/test-coverage-gap.ts — テストカバレッジギャップ計算 (computeTestCoverageGap, extractTestImports)
 - src/metrics/test-coverage-gap.test.ts — テストカバレッジギャップのテスト (9 tests)
+
+## Task T15: METRIC_COMPUTATIONS 24次元統合
+- src/metrics/registry.ts — replaced 5 stub computations with real implementations
+- src/metrics/registry.test.ts — added graceful degradation tests for evolution metrics
+
+## Task T16: 既存テスト24次元対応
+- src/metrics/health.test.ts — updated test descriptions 19→24
+- src/cli/formatters/table.test.ts — updated test description + added 5 new dimension label assertions
+- src/cli/formatters/json.test.ts — updated test description 19→24
+- src/mcp/tools/scan.ts — updated tool description 19→24 dimensions
+- src/mcp/tools/scan.test.ts — updated mock with 5 new dimensions, updated assertions 19→24
+- src/e2e/self-scan.test.ts — updated test description 19→24
+- src/e2e/mcp-integration.test.ts — updated test description 19→24
+
+## Task T17: E2Eテスト24次元対応
+- src/e2e/full-pipeline.test.ts — updated test descriptions 19→24

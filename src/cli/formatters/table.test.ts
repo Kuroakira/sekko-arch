@@ -16,7 +16,7 @@ describe("formatTable", () => {
     expect(output).toContain("Grade");
   });
 
-  it("displays all 19 dimensions with human-readable names", () => {
+  it("displays all 24 dimensions with human-readable names", () => {
     const output = formatTable(makeHealth());
     expect(output).toContain("Cycles");
     expect(output).toContain("Coupling");
@@ -37,6 +37,11 @@ describe("formatTable", () => {
     expect(output).toContain("Comments");
     expect(output).toContain("Distance from Main Seq");
     expect(output).toContain("Attack Surface");
+    expect(output).toContain("Code Churn");
+    expect(output).toContain("Change Coupling");
+    expect(output).toContain("Bus Factor");
+    expect(output).toContain("Code Age");
+    expect(output).toContain("Test Coverage Gap");
   });
 
   it("formats integer dimensions without decimal places", () => {

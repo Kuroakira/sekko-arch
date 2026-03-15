@@ -18,6 +18,15 @@ import { computeCohesion } from "./cohesion.js";
 import { computeEntropy } from "./entropy.js";
 import { computeDistanceFromMainSeq } from "./distance-main-seq.js";
 import { computeAttackSurface } from "./attack-surface.js";
+import { computeCodeChurn } from "./code-churn.js";
+import { computeChangeCoupling } from "./change-coupling.js";
+import { computeBusFactor } from "./bus-factor.js";
+import { computeCodeAge } from "./code-age.js";
+import {
+  computeTestCoverageGap,
+  extractTestImports,
+} from "./test-coverage-gap.js";
+import { collectTestFiles } from "../scanner/test-files.js";
 import type { MetricContext } from "./context.js";
 
 function makeDimensionResult(
@@ -243,26 +252,65 @@ export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
       });
     },
   },
-  // Stub computations for evolution metrics (replaced in Group C/D/E)
   {
     name: "codeChurn",
-    compute: () => makeDimensionResult("codeChurn", 0, { files: [] }),
+    compute(ctx) {
+      const r = computeCodeChurn(ctx.gitHistory);
+      return makeDimensionResult("codeChurn", r.rawValue, {
+        files: r.files,
+      });
+    },
   },
   {
     name: "changeCoupling",
-    compute: () => makeDimensionResult("changeCoupling", 0, { pairs: [] }),
+    compute(ctx) {
+      const r = computeChangeCoupling(
+        ctx.gitHistory,
+        ctx.evolutionConfig?.changeCouplingThreshold,
+      );
+      return makeDimensionResult("changeCoupling", r.rawValue, {
+        pairs: r.pairs,
+      });
+    },
   },
   {
     name: "busFactor",
-    compute: () => makeDimensionResult("busFactor", 0, { files: [] }),
+    compute(ctx) {
+      const r = computeBusFactor(ctx.gitHistory);
+      return makeDimensionResult("busFactor", r.rawValue, {
+        files: r.files,
+      });
+    },
   },
   {
     name: "codeAge",
-    compute: () => makeDimensionResult("codeAge", 0, { files: [] }),
+    compute(ctx) {
+      const r = computeCodeAge(
+        ctx.gitHistory,
+        ctx.evolutionConfig?.codeAgeThresholdDays,
+      );
+      return makeDimensionResult("codeAge", r.rawValue, {
+        files: r.files,
+      });
+    },
   },
   {
     name: "testCoverageGap",
-    compute: () => makeDimensionResult("testCoverageGap", 0, { files: [] }),
+    compute(ctx) {
+      const rootDir = ctx.snapshot.root.path;
+      const testFiles = collectTestFiles(rootDir);
+      const sourceFiles = ctx.filePaths;
+      const testImports = extractTestImports(testFiles, rootDir);
+      const r = computeTestCoverageGap(
+        sourceFiles,
+        testFiles,
+        testImports,
+        ctx.snapshot.importGraph,
+      );
+      return makeDimensionResult("testCoverageGap", r.rawValue, {
+        files: r.files,
+      });
+    },
   },
 ];
 

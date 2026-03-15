@@ -16,7 +16,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 | B | Git履歴モジュール | T06-T08 | `src/git/` — 型定義, git log収集・解析, パイプライン前段統合 | **done** (2026-03-15) |
 | C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | **done** (2026-03-15) |
 | D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | **done** (2026-03-15) |
-| E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | pending |
+| E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | **done** (2026-03-15) |
 | F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | pending |
 | G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | pending |
 | H | 統合テスト・検証 | T24-T26 | 自己スキャン24次元, パフォーマンスベンチマーク, Git不在環境テスト | pending |
@@ -329,7 +329,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 ### Group E: レジストリ統合・既存テスト更新
 
-#### T15: METRIC_COMPUTATIONS 24次元統合
+#### [DONE] T15: METRIC_COMPUTATIONS 24次元統合 (completed 2026-03-15)
 
 - **Description**: `src/metrics/registry.ts`のstub computationを実装に置換。5つの新MetricComputationエントリがGroup C/Dのcompute関数を呼び出す。git系メトリクスはgitHistory未定義時にrawValue=0を返す。
 - **Files**: `src/metrics/registry.ts`
@@ -337,7 +337,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: `src/metrics/registry.test.ts`（更新）— 24のMetricComputationが登録されていることを確認。gitHistory未定義時のgraceful degradation。
 - **Acceptance**: METRIC_COMPUTATIONSが24エントリ。computeHealth()が24次元のHealthReportを生成。
 
-#### T16: 既存テスト24次元対応
+#### [DONE] T16: 既存テスト24次元対応 (completed 2026-03-15)
 
 - **Description**: DimensionName拡張とcategoryフィールド追加による既存テストのコンパイルエラーを修正。T05のテストヘルパーを活用。
 - **Files**:
@@ -354,7 +354,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: `npm run typecheck && npm test` 全パス
 - **Acceptance**: 全既存テストが24次元に対応してパス
 
-#### T17: E2Eテスト24次元対応
+#### [DONE] T17: E2Eテスト24次元対応 (completed 2026-03-15)
 
 - **Description**: E2Eテストを24次元に対応。テストフィクスチャプロジェクトでの5新メトリクス計算を検証。git系メトリクスはテストフィクスチャのgitリポジトリ状態に依存するため、graceful degradation（gitHistory未定義→スキップ）の動作確認を含む。
 - **Files**: `src/e2e/full-pipeline.test.ts`

@@ -12,7 +12,7 @@ describe("E2E: self-scan", { timeout: 60000 }, () => {
   const result = executePipeline(PROJECT_ROOT);
   const { health } = result;
 
-  it("produces a grade for all 19 dimensions", () => {
+  it("produces a grade for all 24 dimensions", () => {
     for (const name of DIMENSION_NAMES) {
       const dim = health.dimensions[name];
       expect(dim, `missing dimension: ${name}`).toBeDefined();
