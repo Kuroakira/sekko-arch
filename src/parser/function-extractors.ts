@@ -88,36 +88,41 @@ const VARIABLE_DECLARATION_TYPES = new Set([
   "variable_declaration",
 ]);
 
+/**
+ * Extract functions from a single declaration node (function, variable, or class).
+ * Returns functions found, or empty array if node type is not recognized.
+ */
+function extractFromDeclaration(node: SyntaxNode): FuncInfo[] {
+  if (FUNCTION_TYPES.has(node.type)) {
+    return [extractFunctionFromDeclaration(node)];
+  }
+
+  if (VARIABLE_DECLARATION_TYPES.has(node.type)) {
+    const results: FuncInfo[] = [];
+    for (const child of node.namedChildren) {
+      if (child.type === "variable_declarator") {
+        const func = extractArrowFromDeclarator(child, node);
+        if (func !== null) {
+          results.push(func);
+        }
+      }
+    }
+    return results;
+  }
+
+  if (node.type === "class_declaration") {
+    const body = node.namedChildren.find((c) => c.type === "class_body");
+    return body ? extractMethodsFromClassBody(body) : [];
+  }
+
+  return [];
+}
+
 export function extractFunctions(tree: Tree): FuncInfo[] {
   const results: FuncInfo[] = [];
   const root = tree.rootNode;
 
   for (const node of root.namedChildren) {
-    if (FUNCTION_TYPES.has(node.type)) {
-      results.push(extractFunctionFromDeclaration(node));
-      continue;
-    }
-
-    if (VARIABLE_DECLARATION_TYPES.has(node.type)) {
-      for (const child of node.namedChildren) {
-        if (child.type === "variable_declarator") {
-          const func = extractArrowFromDeclarator(child, node);
-          if (func !== null) {
-            results.push(func);
-          }
-        }
-      }
-      continue;
-    }
-
-    if (node.type === "class_declaration") {
-      const body = node.namedChildren.find((c) => c.type === "class_body");
-      if (body) {
-        results.push(...extractMethodsFromClassBody(body));
-      }
-      continue;
-    }
-
     if (node.type === "export_statement") {
       const declaration = node.namedChildren.find(
         (c) =>
@@ -125,28 +130,11 @@ export function extractFunctions(tree: Tree): FuncInfo[] {
           VARIABLE_DECLARATION_TYPES.has(c.type) ||
           c.type === "class_declaration",
       );
-      if (declaration && FUNCTION_TYPES.has(declaration.type)) {
-        results.push(extractFunctionFromDeclaration(declaration));
-      } else if (
-        declaration &&
-        VARIABLE_DECLARATION_TYPES.has(declaration.type)
-      ) {
-        for (const child of declaration.namedChildren) {
-          if (child.type === "variable_declarator") {
-            const func = extractArrowFromDeclarator(child, declaration);
-            if (func !== null) {
-              results.push(func);
-            }
-          }
-        }
-      } else if (declaration?.type === "class_declaration") {
-        const body = declaration.namedChildren.find(
-          (c) => c.type === "class_body",
-        );
-        if (body) {
-          results.push(...extractMethodsFromClassBody(body));
-        }
+      if (declaration) {
+        results.push(...extractFromDeclaration(declaration));
       }
+    } else {
+      results.push(...extractFromDeclaration(node));
     }
   }
 

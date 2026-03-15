@@ -30,127 +30,115 @@ function formatValue(dim: DimensionResult): string {
   return dim.rawValue.toFixed(2);
 }
 
+type DetailFormatter = (details: Record<string, unknown>) => readonly string[];
+
+function formatStringList(key: string): DetailFormatter {
+  return (details) => (details[key] as string[] | undefined) ?? [];
+}
+
+function formatFuncList(
+  key: string,
+  metricKey: string,
+  metricLabel: string,
+): DetailFormatter {
+  return (details) => {
+    const fns = details[key] as
+      | Array<{ file: string; name: string; [k: string]: unknown }>
+      | undefined;
+    if (!fns?.length) return [];
+    return fns.map((f) => `${f.file}:${f.name} (${metricLabel}=${f[metricKey]})`);
+  };
+}
+
+const DETAIL_FORMATTERS: Readonly<Record<DimensionName, DetailFormatter>> = {
+  cycles: (d) => {
+    const cycles = d["cycles"] as string[][] | undefined;
+    if (!cycles?.length) return [];
+    return cycles.map((c) => c.join(" \u2192 "));
+  },
+  coupling: (d) => [
+    `${d["crossModuleEdges"]} cross-module edges (${d["crossModuleToUnstable"]} to unstable)`,
+  ],
+  depth: (d) => {
+    const path = d["deepestPath"] as string[] | undefined;
+    if (!path?.length) return [];
+    return [path.join(" \u2192 ")];
+  },
+  godFiles: formatStringList("files"),
+  complexFn: formatFuncList("complexFunctions", "cc", "CC"),
+  levelization: (d) => [
+    `${d["violations"]} violations in ${d["totalEdges"]} edges`,
+  ],
+  blastRadius: (d) => [
+    `${d["maxBlastRadiusFile"]} (radius ${d["maxBlastRadius"]}/${d["totalFiles"]})`,
+  ],
+  cognitiveComplexity: formatFuncList("functions", "cognitiveComplexity", "CC"),
+  hotspots: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; score: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (score=${f.score.toFixed(1)})`);
+  },
+  longFunctions: (d) => {
+    const fns = d["functions"] as
+      | Array<{ file: string; name: string; lineCount: number }>
+      | undefined;
+    if (!fns?.length) return [];
+    return fns.map((f) => `${f.file}:${f.name} (${f.lineCount} lines)`);
+  },
+  largeFiles: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; lines: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (${f.lines} lines)`);
+  },
+  highParams: formatFuncList("functions", "paramCount", "params"),
+  duplication: (d) => {
+    const groups = d["groups"] as
+      | Array<{
+          bodyHash: string;
+          functions: Array<{ file: string; name: string }>;
+        }>
+      | undefined;
+    if (!groups?.length) return [];
+    return groups.map(
+      (g) => g.functions.map((f) => `${f.file}:${f.name}`).join(", "),
+    );
+  },
+  deadCode: formatStringList("files"),
+  comments: (d) => {
+    const ratio = d["commentRatio"];
+    if (typeof ratio !== "number") return [];
+    return [`comment ratio: ${(ratio * 100).toFixed(1)}%`];
+  },
+  cohesion: (d) => {
+    const worst = d["worstCohesion"];
+    if (typeof worst !== "number") return [];
+    return [`${d["worstModule"]} (cohesion=${worst.toFixed(2)})`];
+  },
+  entropy: (d) => {
+    const val = d["normalizedEntropy"];
+    if (typeof val !== "number") return [];
+    return [`normalized entropy: ${val.toFixed(2)}`];
+  },
+  distanceFromMainSeq: (d) => {
+    const dist = d["distance"];
+    if (typeof dist !== "number") return [];
+    return [`${d["worstModule"]} (D=${dist.toFixed(2)})`];
+  },
+  attackSurface: (d) => [
+    `${d["reachableCount"]}/${d["totalFiles"]} files reachable`,
+  ],
+};
+
 function formatDetailItems(
   name: DimensionName,
   details: Record<string, unknown>,
 ): readonly string[] {
-  switch (name) {
-    case "cycles": {
-      const cycles = details["cycles"] as string[][] | undefined;
-      if (!cycles?.length) return [];
-      return cycles.map((c) => c.join(" \u2192 "));
-    }
-    case "coupling":
-      return [
-        `${details["crossModuleEdges"]} cross-module edges (${details["crossModuleToUnstable"]} to unstable)`,
-      ];
-    case "depth": {
-      const path = details["deepestPath"] as string[] | undefined;
-      if (!path?.length) return [];
-      return [path.join(" \u2192 ")];
-    }
-    case "godFiles": {
-      const files = details["files"] as string[] | undefined;
-      return files ?? [];
-    }
-    case "complexFn": {
-      const fns = details["complexFunctions"] as
-        | Array<{ file: string; name: string; cc: number }>
-        | undefined;
-      if (!fns?.length) return [];
-      return fns.map((f) => `${f.file}:${f.name} (CC=${f.cc})`);
-    }
-    case "levelization":
-      return [
-        `${details["violations"]} violations in ${details["totalEdges"]} edges`,
-      ];
-    case "blastRadius":
-      return [
-        `${details["maxBlastRadiusFile"]} (radius ${details["maxBlastRadius"]}/${details["totalFiles"]})`,
-      ];
-    case "cognitiveComplexity": {
-      const fns = details["functions"] as
-        | Array<{ file: string; name: string; cognitiveComplexity: number }>
-        | undefined;
-      if (!fns?.length) return [];
-      return fns.map(
-        (f) => `${f.file}:${f.name} (CC=${f.cognitiveComplexity})`,
-      );
-    }
-    case "hotspots": {
-      const files = details["files"] as
-        | Array<{ file: string; score: number }>
-        | undefined;
-      if (!files?.length) return [];
-      return files.map((f) => `${f.file} (score=${f.score.toFixed(1)})`);
-    }
-    case "longFunctions": {
-      const fns = details["functions"] as
-        | Array<{ file: string; name: string; lineCount: number }>
-        | undefined;
-      if (!fns?.length) return [];
-      return fns.map((f) => `${f.file}:${f.name} (${f.lineCount} lines)`);
-    }
-    case "largeFiles": {
-      const files = details["files"] as
-        | Array<{ file: string; lines: number }>
-        | undefined;
-      if (!files?.length) return [];
-      return files.map((f) => `${f.file} (${f.lines} lines)`);
-    }
-    case "highParams": {
-      const fns = details["functions"] as
-        | Array<{ file: string; name: string; paramCount: number }>
-        | undefined;
-      if (!fns?.length) return [];
-      return fns.map((f) => `${f.file}:${f.name} (${f.paramCount} params)`);
-    }
-    case "duplication": {
-      const groups = details["groups"] as
-        | Array<{
-            bodyHash: string;
-            functions: Array<{ file: string; name: string }>;
-          }>
-        | undefined;
-      if (!groups?.length) return [];
-      return groups.map(
-        (g) =>
-          g.functions.map((f) => `${f.file}:${f.name}`).join(", "),
-      );
-    }
-    case "deadCode": {
-      const files = details["files"] as string[] | undefined;
-      return files ?? [];
-    }
-    case "comments": {
-      const ratio = details["commentRatio"];
-      if (typeof ratio !== "number") return [];
-      return [`comment ratio: ${(ratio * 100).toFixed(1)}%`];
-    }
-    case "cohesion": {
-      const worst = details["worstCohesion"];
-      if (typeof worst !== "number") return [];
-      return [
-        `${details["worstModule"]} (cohesion=${worst.toFixed(2)})`,
-      ];
-    }
-    case "entropy": {
-      const val = details["normalizedEntropy"];
-      if (typeof val !== "number") return [];
-      return [`normalized entropy: ${val.toFixed(2)}`];
-    }
-    case "distanceFromMainSeq": {
-      const dist = details["distance"];
-      if (typeof dist !== "number") return [];
-      return [`${details["worstModule"]} (D=${dist.toFixed(2)})`];
-    }
-    case "attackSurface":
-      return [
-        `${details["reachableCount"]}/${details["totalFiles"]} files reachable`,
-      ];
-    default:
-      return [];
-  }
+  const formatter = DETAIL_FORMATTERS[name];
+  return formatter(details);
 }
 
 function formatProblemAreas(report: HealthReport): readonly string[] {

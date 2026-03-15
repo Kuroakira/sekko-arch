@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { moduleOf } from "./module-of.js";
+import { moduleOf } from "./module-boundary.js";
 
 describe("moduleOf", () => {
   it("extracts depth-2 directory from a nested path", () => {

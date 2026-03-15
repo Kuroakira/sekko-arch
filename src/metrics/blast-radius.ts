@@ -1,6 +1,7 @@
 export interface BlastRadiusResult {
   readonly maxBlastRadius: number;
   readonly maxBlastRadiusRatio: number;
+  readonly maxBlastRadiusFile: string;
   readonly perFile: ReadonlyMap<string, number>;
 }
 
@@ -15,7 +16,12 @@ export function computeBlastRadius(
 ): BlastRadiusResult {
   const totalFiles = reverseAdjacency.size;
   if (totalFiles === 0) {
-    return { maxBlastRadius: 0, maxBlastRadiusRatio: 0, perFile: new Map() };
+    return {
+      maxBlastRadius: 0,
+      maxBlastRadiusRatio: 0,
+      maxBlastRadiusFile: "",
+      perFile: new Map(),
+    };
   }
 
   const perFile = new Map<string, number>();
@@ -44,12 +50,14 @@ export function computeBlastRadius(
 
   // Find max excluding foundation files
   let maxBlastRadius = 0;
+  let maxBlastRadiusFile = "";
   for (const [file, radius] of perFile) {
     if (!foundationFiles.has(file) && radius > maxBlastRadius) {
       maxBlastRadius = radius;
+      maxBlastRadiusFile = file;
     }
   }
 
   const maxBlastRadiusRatio = maxBlastRadius / totalFiles;
-  return { maxBlastRadius, maxBlastRadiusRatio, perFile };
+  return { maxBlastRadius, maxBlastRadiusRatio, maxBlastRadiusFile, perFile };
 }

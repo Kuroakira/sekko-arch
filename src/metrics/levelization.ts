@@ -6,20 +6,12 @@ export interface LevelizationResult {
 }
 
 /**
- * Compute levelization via Kahn's topological sort on the SCC DAG.
- * Nodes in cycles are collapsed into single SCC nodes.
- * Level 0 = leaf (no outgoing edges in DAG).
- * Upward violations = edges from lower level to higher level + intra-SCC edges.
+ * Map each node to its SCC representative.
+ * Nodes not in any cycle map to themselves.
  */
-export function computeLevelization(
-  adjacency: ReadonlyMap<string, readonly string[]>,
+function buildSccMap(
   cycles: readonly (readonly string[])[],
-): LevelizationResult {
-  if (adjacency.size === 0) {
-    return { levels: new Map(), violations: 0, totalEdges: 0, violationRatio: 0 };
-  }
-
-  // Map each node to its SCC representative
+): ReadonlyMap<string, string> {
   const sccMap = new Map<string, string>();
   for (const cycle of cycles) {
     const rep = cycle[0];
@@ -27,10 +19,19 @@ export function computeLevelization(
       sccMap.set(node, rep);
     }
   }
+  return sccMap;
+}
 
+/**
+ * Build the SCC DAG: collapse each cycle into its representative node,
+ * remove intra-SCC edges.
+ */
+function buildSccDag(
+  adjacency: ReadonlyMap<string, readonly string[]>,
+  sccMap: ReadonlyMap<string, string>,
+): ReadonlyMap<string, ReadonlySet<string>> {
   const getRepr = (node: string): string => sccMap.get(node) ?? node;
 
-  // Build SCC DAG
   const sccNodes = new Set<string>();
   for (const node of adjacency.keys()) {
     sccNodes.add(getRepr(node));
@@ -45,17 +46,26 @@ export function computeLevelization(
     const fromRepr = getRepr(from);
     for (const to of neighbors) {
       const toRepr = getRepr(to);
-      if (fromRepr === toRepr) continue; // skip intra-SCC edges in DAG
-      sccAdj.get(fromRepr)?.add(toRepr);
+      if (fromRepr !== toRepr) {
+        sccAdj.get(fromRepr)?.add(toRepr);
+      }
     }
   }
 
-  // Reverse Kahn's: start from sinks (nodes with no outgoing edges in sccAdj)
-  // Level 0 = nodes that don't depend on anything (leaves/sinks)
-  // Build reverse DAG for Kahn's
+  return sccAdj;
+}
+
+/**
+ * Assign levels via reverse Kahn's algorithm on the SCC DAG.
+ * Level 0 = leaf nodes (no outgoing edges).
+ */
+function assignLevels(
+  sccAdj: ReadonlyMap<string, ReadonlySet<string>>,
+): ReadonlyMap<string, number> {
   const reverseAdj = new Map<string, Set<string>>();
   const outDegree = new Map<string, number>();
-  for (const node of sccNodes) {
+
+  for (const node of sccAdj.keys()) {
     reverseAdj.set(node, new Set());
     outDegree.set(node, 0);
   }
@@ -67,7 +77,6 @@ export function computeLevelization(
     }
   }
 
-  // Kahn's on reverse: start from nodes with outDegree 0 (leaves)
   const queue: string[] = [];
   const sccLevels = new Map<string, number>();
 
@@ -98,13 +107,19 @@ export function computeLevelization(
     }
   }
 
-  // Map SCC levels back to individual nodes
-  const levels = new Map<string, number>();
-  for (const node of adjacency.keys()) {
-    levels.set(node, sccLevels.get(getRepr(node)) ?? 0);
-  }
+  return sccLevels;
+}
 
-  // Count violations: edges from lower level to higher level + intra-SCC edges
+/**
+ * Count levelization violations: edges from lower level to higher/equal level,
+ * plus intra-SCC edges.
+ */
+function countViolations(
+  adjacency: ReadonlyMap<string, readonly string[]>,
+  levels: ReadonlyMap<string, number>,
+  sccMap: ReadonlyMap<string, string>,
+): { violations: number; totalEdges: number } {
+  const getRepr = (node: string): string => sccMap.get(node) ?? node;
   let violations = 0;
   let totalEdges = 0;
 
@@ -115,12 +130,10 @@ export function computeLevelization(
       const toRepr = getRepr(to);
 
       if (fromRepr === toRepr && sccMap.has(from)) {
-        // Intra-SCC edge = violation
         violations++;
       } else {
         const fromLevel = levels.get(from) ?? 0;
         const toLevel = levels.get(to) ?? 0;
-        // Upward violation: edge from lower level to same or higher level
         if (fromLevel <= toLevel && fromRepr !== toRepr) {
           violations++;
         }
@@ -128,6 +141,36 @@ export function computeLevelization(
     }
   }
 
+  return { violations, totalEdges };
+}
+
+/**
+ * Compute levelization via Kahn's topological sort on the SCC DAG.
+ * Nodes in cycles are collapsed into single SCC nodes.
+ * Level 0 = leaf (no outgoing edges in DAG).
+ * Upward violations = edges from lower level to higher level + intra-SCC edges.
+ */
+export function computeLevelization(
+  adjacency: ReadonlyMap<string, readonly string[]>,
+  cycles: readonly (readonly string[])[],
+): LevelizationResult {
+  if (adjacency.size === 0) {
+    return { levels: new Map(), violations: 0, totalEdges: 0, violationRatio: 0 };
+  }
+
+  const sccMap = buildSccMap(cycles);
+  const sccAdj = buildSccDag(adjacency, sccMap);
+  const sccLevels = assignLevels(sccAdj);
+
+  // Map SCC levels back to individual nodes
+  const getRepr = (node: string): string => sccMap.get(node) ?? node;
+  const levels = new Map<string, number>();
+  for (const node of adjacency.keys()) {
+    levels.set(node, sccLevels.get(getRepr(node)) ?? 0);
+  }
+
+  const { violations, totalEdges } = countViolations(adjacency, levels, sccMap);
   const violationRatio = totalEdges === 0 ? 0 : violations / totalEdges;
+
   return { levels, violations, totalEdges, violationRatio };
 }

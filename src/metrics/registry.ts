@@ -1,26 +1,19 @@
 import type { DimensionName, DimensionResult } from "../types/metrics.js";
-import {
-  COMPLEXITY_CC_THRESHOLD,
-  COGNITIVE_COMPLEXITY_THRESHOLD,
-  LONG_FUNCTION_LINE_THRESHOLD,
-  LARGE_FILE_LINE_THRESHOLD,
-  HIGH_PARAMS_THRESHOLD,
-} from "./thresholds.js";
 import { DIMENSION_NAMES, gradeDimension } from "../dimensions.js";
 import { computeCoupling } from "./coupling.js";
 import { computeMaxDepth } from "./depth.js";
 import { detectGodFiles } from "./god-files.js";
-import { computeComplexFnRatio } from "./complex-fns.js";
+import { computeComplexFns } from "./complex-fns.js";
 import { computeLevelization } from "./levelization.js";
 import { computeBlastRadius } from "./blast-radius.js";
-import { computeCognitiveComplexityRatio } from "./cognitive-complexity.js";
+import { computeCognitiveComplexity } from "./cognitive-complexity.js";
 import { computeHotspotRatio } from "./hotspots.js";
-import { computeLongFunctionRatio } from "./long-functions.js";
-import { computeLargeFileRatio } from "./large-files.js";
-import { computeHighParamsRatio } from "./high-params.js";
-import { computeDuplicationRatio } from "./duplication.js";
+import { computeLongFunctions } from "./long-functions.js";
+import { computeLargeFiles } from "./large-files.js";
+import { computeHighParams } from "./high-params.js";
+import { computeDuplication } from "./duplication.js";
 import { computeDeadCodeRatio } from "./dead-code.js";
-import { computeCommentRawValue } from "./comments.js";
+import { computeComments } from "./comments.js";
 import { computeCohesion } from "./cohesion.js";
 import { computeEntropy } from "./entropy.js";
 import { computeDistanceFromMainSeq } from "./distance-main-seq.js";
@@ -48,311 +41,204 @@ export interface MetricComputation {
 export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
   {
     name: "cycles",
-    compute(ctx) {
-      return makeDimensionResult("cycles", ctx.cycleResult.cycleCount, {
+    compute: (ctx) =>
+      makeDimensionResult("cycles", ctx.cycleResult.cycleCount, {
         cycles: ctx.cycleResult.cycles,
-      });
-    },
+      }),
   },
   {
     name: "coupling",
     compute(ctx) {
-      const result = computeCoupling(
+      const r = computeCoupling(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
         ctx.fanMaps.fanIn,
         ctx.fanMaps.fanOut,
       );
-      return makeDimensionResult("coupling", result.score, {
-        crossModuleEdges: result.crossModuleEdges,
-        crossModuleToUnstable: result.crossModuleToUnstable,
+      return makeDimensionResult("coupling", r.score, {
+        crossModuleEdges: r.crossModuleEdges,
+        crossModuleToUnstable: r.crossModuleToUnstable,
       });
     },
   },
   {
     name: "depth",
     compute(ctx) {
-      const result = computeMaxDepth(ctx.snapshot.importGraph.adjacency);
-      return makeDimensionResult("depth", result.maxDepth, {
-        deepestPath: result.deepestPath,
+      const r = computeMaxDepth(ctx.snapshot.importGraph.adjacency);
+      return makeDimensionResult("depth", r.maxDepth, {
+        deepestPath: r.deepestPath,
       });
     },
   },
   {
     name: "godFiles",
     compute(ctx) {
-      const result = detectGodFiles(ctx.fanMaps.fanOut, ctx.entryPoints);
-      return makeDimensionResult("godFiles", result.ratio, {
-        files: result.godFiles,
-        count: result.count,
+      const r = detectGodFiles(ctx.fanMaps.fanOut, ctx.entryPoints);
+      return makeDimensionResult("godFiles", r.ratio, {
+        files: r.godFiles,
+        count: r.count,
       });
     },
   },
   {
     name: "complexFn",
     compute(ctx) {
-      const ratio = computeComplexFnRatio(ctx.allFunctions);
-      const complexFunctions: Array<{
-        file: string;
-        name: string;
-        cc: number;
-      }> = [];
-      for (const file of ctx.snapshot.files) {
-        for (const fn of file.sa?.functions ?? []) {
-          if (fn.cc > COMPLEXITY_CC_THRESHOLD) {
-            complexFunctions.push({
-              file: file.path,
-              name: fn.name,
-              cc: fn.cc,
-            });
-          }
-        }
-      }
-      return makeDimensionResult("complexFn", ratio, {
-        totalFunctions: ctx.allFunctions.length,
-        complexCount: complexFunctions.length,
-        complexFunctions,
+      const r = computeComplexFns(ctx.snapshot.files);
+      return makeDimensionResult("complexFn", r.ratio, {
+        totalFunctions: r.totalFunctions,
+        complexCount: r.complexCount,
+        complexFunctions: r.complexFunctions,
       });
     },
   },
   {
     name: "levelization",
     compute(ctx) {
-      const result = computeLevelization(
+      const r = computeLevelization(
         ctx.snapshot.importGraph.adjacency,
         ctx.cycleResult.cycles,
       );
-      return makeDimensionResult("levelization", result.violationRatio, {
-        violations: result.violations,
-        totalEdges: result.totalEdges,
+      return makeDimensionResult("levelization", r.violationRatio, {
+        violations: r.violations,
+        totalEdges: r.totalEdges,
       });
     },
   },
   {
     name: "blastRadius",
     compute(ctx) {
-      const result = computeBlastRadius(
+      const r = computeBlastRadius(
         ctx.snapshot.importGraph.reverseAdjacency,
         ctx.foundationFiles,
       );
-      let maxBlastRadiusFile = "";
-      let maxRadius = 0;
-      for (const [file, radius] of result.perFile) {
-        if (!ctx.foundationFiles.has(file) && radius > maxRadius) {
-          maxRadius = radius;
-          maxBlastRadiusFile = file;
-        }
-      }
-      return makeDimensionResult("blastRadius", result.maxBlastRadiusRatio, {
-        maxBlastRadius: result.maxBlastRadius,
+      return makeDimensionResult("blastRadius", r.maxBlastRadiusRatio, {
+        maxBlastRadius: r.maxBlastRadius,
         totalFiles: ctx.snapshot.totalFiles,
-        maxBlastRadiusFile,
+        maxBlastRadiusFile: r.maxBlastRadiusFile,
       });
     },
   },
   {
     name: "cognitiveComplexity",
     compute(ctx) {
-      const ratio = computeCognitiveComplexityRatio(ctx.allFunctions);
-      const functions: Array<{
-        file: string;
-        name: string;
-        cognitiveComplexity: number;
-      }> = [];
-      for (const file of ctx.snapshot.files) {
-        for (const fn of file.sa?.functions ?? []) {
-          if (fn.cognitiveComplexity > COGNITIVE_COMPLEXITY_THRESHOLD) {
-            functions.push({
-              file: file.path,
-              name: fn.name,
-              cognitiveComplexity: fn.cognitiveComplexity,
-            });
-          }
-        }
-      }
-      return makeDimensionResult("cognitiveComplexity", ratio, {
-        totalFunctions: ctx.allFunctions.length,
-        complexCount: functions.length,
-        functions,
+      const r = computeCognitiveComplexity(ctx.snapshot.files);
+      return makeDimensionResult("cognitiveComplexity", r.ratio, {
+        totalFunctions: r.totalFunctions,
+        complexCount: r.complexCount,
+        functions: r.functions,
       });
     },
   },
   {
     name: "hotspots",
     compute(ctx) {
-      const result = computeHotspotRatio(ctx.fanMaps);
-      return makeDimensionResult("hotspots", result.ratio, {
-        files: result.hotspotFiles,
+      const r = computeHotspotRatio(ctx.fanMaps);
+      return makeDimensionResult("hotspots", r.ratio, {
+        files: r.hotspotFiles,
       });
     },
   },
   {
     name: "longFunctions",
     compute(ctx) {
-      const ratio = computeLongFunctionRatio(ctx.allFunctions);
-      const functions: Array<{
-        file: string;
-        name: string;
-        lineCount: number;
-      }> = [];
-      for (const file of ctx.snapshot.files) {
-        for (const fn of file.sa?.functions ?? []) {
-          if (fn.lineCount > LONG_FUNCTION_LINE_THRESHOLD) {
-            functions.push({
-              file: file.path,
-              name: fn.name,
-              lineCount: fn.lineCount,
-            });
-          }
-        }
-      }
-      return makeDimensionResult("longFunctions", ratio, { functions });
+      const r = computeLongFunctions(ctx.snapshot.files);
+      return makeDimensionResult("longFunctions", r.ratio, {
+        functions: r.functions,
+      });
     },
   },
   {
     name: "largeFiles",
     compute(ctx) {
-      const ratio = computeLargeFileRatio(ctx.snapshot.files);
-      const files: Array<{ file: string; lines: number }> = [];
-      for (const file of ctx.snapshot.files) {
-        if (file.lines > LARGE_FILE_LINE_THRESHOLD) {
-          files.push({ file: file.path, lines: file.lines });
-        }
-      }
-      return makeDimensionResult("largeFiles", ratio, { files });
+      const r = computeLargeFiles(ctx.snapshot.files);
+      return makeDimensionResult("largeFiles", r.ratio, { files: r.files });
     },
   },
   {
     name: "highParams",
     compute(ctx) {
-      const ratio = computeHighParamsRatio(ctx.allFunctions);
-      const functions: Array<{
-        file: string;
-        name: string;
-        paramCount: number;
-      }> = [];
-      for (const file of ctx.snapshot.files) {
-        for (const fn of file.sa?.functions ?? []) {
-          if (fn.paramCount > HIGH_PARAMS_THRESHOLD) {
-            functions.push({
-              file: file.path,
-              name: fn.name,
-              paramCount: fn.paramCount,
-            });
-          }
-        }
-      }
-      return makeDimensionResult("highParams", ratio, { functions });
+      const r = computeHighParams(ctx.snapshot.files);
+      return makeDimensionResult("highParams", r.ratio, {
+        functions: r.functions,
+      });
     },
   },
   {
     name: "duplication",
     compute(ctx) {
-      const ratio = computeDuplicationRatio(ctx.allFunctions);
-      const hashMap = new Map<
-        string,
-        Array<{ file: string; name: string }>
-      >();
-      for (const file of ctx.snapshot.files) {
-        for (const fn of file.sa?.functions ?? []) {
-          const existing = hashMap.get(fn.bodyHash);
-          if (existing) {
-            existing.push({ file: file.path, name: fn.name });
-          } else {
-            hashMap.set(fn.bodyHash, [{ file: file.path, name: fn.name }]);
-          }
-        }
-      }
-      const groups: Array<{
-        bodyHash: string;
-        functions: Array<{ file: string; name: string }>;
-      }> = [];
-      for (const [bodyHash, fns] of hashMap) {
-        if (fns.length >= 2) {
-          groups.push({ bodyHash, functions: fns });
-        }
-      }
-      return makeDimensionResult("duplication", ratio, { groups });
+      const r = computeDuplication(ctx.snapshot.files);
+      return makeDimensionResult("duplication", r.ratio, { groups: r.groups });
     },
   },
   {
     name: "deadCode",
     compute(ctx) {
-      const result = computeDeadCodeRatio(
+      const r = computeDeadCodeRatio(
         ctx.snapshot.importGraph.reverseAdjacency,
         ctx.entryPoints,
         ctx.snapshot.files,
       );
-      return makeDimensionResult("deadCode", result.ratio, {
-        files: result.deadFiles,
+      return makeDimensionResult("deadCode", r.ratio, {
+        files: r.deadFiles,
       });
     },
   },
   {
     name: "comments",
     compute(ctx) {
-      const rawValue = computeCommentRawValue(ctx.snapshot.files);
-      const totalLines = ctx.snapshot.files.reduce(
-        (sum, f) => sum + f.lines,
-        0,
-      );
-      const totalCommentLines = ctx.snapshot.files.reduce(
-        (sum, f) => sum + f.comments,
-        0,
-      );
-      const commentRatio = totalLines === 0 ? 0 : totalCommentLines / totalLines;
-      return makeDimensionResult("comments", rawValue, { commentRatio });
+      const r = computeComments(ctx.snapshot.files);
+      return makeDimensionResult("comments", r.rawValue, {
+        commentRatio: r.commentRatio,
+      });
     },
   },
   {
     name: "cohesion",
     compute(ctx) {
-      const result = computeCohesion(
+      const r = computeCohesion(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("cohesion", result.rawValue, {
-        worstModule: result.worstModule,
-        worstCohesion: result.worstCohesion,
+      return makeDimensionResult("cohesion", r.rawValue, {
+        worstModule: r.worstModule,
+        worstCohesion: r.worstCohesion,
       });
     },
   },
   {
     name: "entropy",
     compute(ctx) {
-      const rawValue = computeEntropy(
+      const r = computeEntropy(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("entropy", rawValue, {
-        normalizedEntropy: rawValue,
-      });
+      return makeDimensionResult("entropy", r, { normalizedEntropy: r });
     },
   },
   {
     name: "distanceFromMainSeq",
     compute(ctx) {
-      const result = computeDistanceFromMainSeq(
+      const r = computeDistanceFromMainSeq(
         ctx.snapshot.files,
         ctx.fanMaps,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("distanceFromMainSeq", result.maxDistance, {
-        worstModule: result.worstModule,
-        distance: result.maxDistance,
+      return makeDimensionResult("distanceFromMainSeq", r.maxDistance, {
+        worstModule: r.worstModule,
+        distance: r.maxDistance,
       });
     },
   },
   {
     name: "attackSurface",
     compute(ctx) {
-      const result = computeAttackSurface(
+      const r = computeAttackSurface(
         ctx.snapshot.importGraph.adjacency,
         ctx.entryPoints,
         ctx.snapshot.totalFiles,
       );
-      return makeDimensionResult("attackSurface", result.ratio, {
-        reachableCount: result.reachableCount,
+      return makeDimensionResult("attackSurface", r.ratio, {
+        reachableCount: r.reachableCount,
         totalFiles: ctx.snapshot.totalFiles,
       });
     },
