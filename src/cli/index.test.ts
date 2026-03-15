@@ -13,9 +13,9 @@ describe("createProgram", () => {
     expect(program.name()).toBe("sekko-arch");
   });
 
-  it("has version 0.2.0", () => {
+  it("has version 0.3.0", () => {
     const program = createProgram();
-    expect(program.version()).toBe("0.2.0");
+    expect(program.version()).toBe("0.3.0");
   });
 
   it("has a global --format option defaulting to table", async () => {

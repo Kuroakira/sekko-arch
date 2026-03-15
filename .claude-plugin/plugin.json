@@ -1,6 +1,6 @@
 {
   "name": "sekko-arch",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Architecture analysis for TypeScript projects — scores A-F across 19 dimensions. Built for AI-agent workflows.",
   "author": {
     "name": "akirashirahama",

@@ -8,7 +8,7 @@ import { toolDefinitions, handleToolCall } from "./tools/index.js";
 
 export function createMcpServer(): Server {
   const server = new Server(
-    { name: "sekko-arch", version: "0.1.0" },
+    { name: "sekko-arch", version: "0.3.0" },
     { capabilities: { tools: {} } },
   );
 
