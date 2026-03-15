@@ -36,9 +36,16 @@ export interface IgnoreConfig {
   readonly patterns: readonly string[];
 }
 
+export interface EvolutionConfig {
+  readonly days?: number;
+  readonly changeCouplingThreshold?: number;
+  readonly codeAgeThresholdDays?: number;
+}
+
 export interface RulesConfig {
   readonly constraints?: ConstraintsConfig;
   readonly layers?: readonly LayerConfig[];
   readonly boundaries?: readonly BoundaryConfig[];
   readonly ignore?: IgnoreConfig;
+  readonly evolution?: EvolutionConfig;
 }

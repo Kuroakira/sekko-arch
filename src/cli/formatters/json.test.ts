@@ -10,7 +10,7 @@ describe("formatJson", () => {
     expect(() => JSON.parse(result)).not.toThrow();
   });
 
-  it("includes all 19 dimensions with rawValue and grade", () => {
+  it("includes all 24 dimensions with rawValue and grade", () => {
     const report = makeHealth();
     const parsed = JSON.parse(formatJson(report)) as Record<string, unknown>;
     const dimensions = parsed["dimensions"] as Record<

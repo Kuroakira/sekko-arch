@@ -1,4 +1,4 @@
-import { GOD_FILE_FAN_OUT_THRESHOLD } from "./thresholds.js";
+import { GOD_FILE_FAN_OUT_THRESHOLD } from "./detection-thresholds.js";
 
 export interface GodFilesResult {
   readonly godFiles: readonly string[];

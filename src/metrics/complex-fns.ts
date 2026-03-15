@@ -1,5 +1,5 @@
 import type { FileNode, FuncInfo } from "../types/core.js";
-import { COMPLEXITY_CC_THRESHOLD } from "./thresholds.js";
+import { COMPLEXITY_CC_THRESHOLD } from "./detection-thresholds.js";
 
 export interface ComplexFnResult {
   readonly ratio: number;

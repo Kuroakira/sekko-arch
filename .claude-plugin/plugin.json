@@ -1,0 +1,13 @@
+{
+  "name": "sekko-arch",
+  "version": "0.2.0",
+  "description": "Architecture analysis for TypeScript projects — scores A-F across 19 dimensions. Built for AI-agent workflows.",
+  "author": {
+    "name": "akirashirahama",
+    "url": "https://github.com/Kuroakira"
+  },
+  "repository": "https://github.com/Kuroakira/sekko-arch",
+  "license": "MIT",
+  "keywords": ["architecture", "typescript", "static-analysis", "code-quality", "mcp"],
+  "mcpServers": "./.mcp.json"
+}

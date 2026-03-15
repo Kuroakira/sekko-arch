@@ -27,7 +27,7 @@ describe("Metrics Types", () => {
     expect(values.F).toBe(0);
   });
 
-  it("DimensionName covers all 19 dimensions", () => {
+  it("DimensionName covers all 24 dimensions", () => {
     const dims: DimensionName[] = [
       "cycles",
       "coupling",
@@ -48,8 +48,13 @@ describe("Metrics Types", () => {
       "comments",
       "distanceFromMainSeq",
       "attackSurface",
+      "codeChurn",
+      "changeCoupling",
+      "busFactor",
+      "codeAge",
+      "testCoverageGap",
     ];
-    expect(dims).toHaveLength(19);
+    expect(dims).toHaveLength(24);
   });
 
   it("constructs a DimensionResult", () => {
@@ -63,11 +68,11 @@ describe("Metrics Types", () => {
     expect(result.rawValue).toBe(2);
   });
 
-  it("constructs DimensionGrades with all 19 dimensions", () => {
+  it("constructs DimensionGrades with all 24 dimensions", () => {
     const grades: DimensionGrades = makeAllDimensionGrades("A");
 
     expect(grades.cycles.grade).toBe("A");
-    expect(Object.keys(grades)).toHaveLength(19);
+    expect(Object.keys(grades)).toHaveLength(24);
   });
 
   it("constructs a HealthReport", () => {

@@ -6,7 +6,7 @@ import type { DimensionName } from "../../types/metrics.js";
 export const scanToolDefinition: Tool = {
   name: "scan",
   description:
-    "Scan a TypeScript project and return architecture health scores across 19 dimensions",
+    "Scan a TypeScript project and return architecture health scores across 24 dimensions",
   inputSchema: {
     type: "object" as const,
     properties: {

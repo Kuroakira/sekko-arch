@@ -202,4 +202,90 @@ patterns = ["valid-pattern", 42, "another-pattern"]
       rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it("returns undefined evolution when [evolution] section is absent", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(tmpDir, `[constraints]\nmax_cycles = 0\n`);
+      const result = parseRulesFile(tmpDir);
+      expect(result).not.toBeNull();
+      expect((result as RulesConfig).evolution).toBeUndefined();
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [evolution] days", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(tmpDir, `[evolution]\ndays = 180\n`);
+      const result = parseRulesFile(tmpDir);
+      expect((result as RulesConfig).evolution?.days).toBe(180);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [evolution] change_coupling_threshold", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `[evolution]\nchange_coupling_threshold = 10\n`,
+      );
+      const result = parseRulesFile(tmpDir);
+      expect(
+        (result as RulesConfig).evolution?.changeCouplingThreshold,
+      ).toBe(10);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [evolution] code_age_threshold_days", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `[evolution]\ncode_age_threshold_days = 730\n`,
+      );
+      const result = parseRulesFile(tmpDir);
+      expect(
+        (result as RulesConfig).evolution?.codeAgeThresholdDays,
+      ).toBe(730);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [evolution] with all fields", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `[evolution]\ndays = 60\nchange_coupling_threshold = 3\ncode_age_threshold_days = 500\n`,
+      );
+      const result = parseRulesFile(tmpDir);
+      const evo = (result as RulesConfig).evolution;
+      expect(evo?.days).toBe(60);
+      expect(evo?.changeCouplingThreshold).toBe(3);
+      expect(evo?.codeAgeThresholdDays).toBe(500);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("ignores invalid types in [evolution]", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `[evolution]\ndays = "not a number"\n`,
+      );
+      const result = parseRulesFile(tmpDir);
+      expect((result as RulesConfig).evolution).toBeUndefined();
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });

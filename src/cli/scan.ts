@@ -8,6 +8,8 @@ import type { ScanOptions } from "../scanner/index.js";
 import { parseAndExtract } from "../parser/index.js";
 import { buildImportGraph } from "../graph/index.js";
 import { computeHealth } from "../metrics/health.js";
+import { collectGitHistory } from "../git/index.js";
+import { parseRulesFile } from "../rules/toml-parser.js";
 import { getFormatter } from "./formatters/index.js";
 
 export interface PipelineResult {
@@ -63,7 +65,13 @@ export function executePipeline(
     importGraph: graph,
   };
 
-  const health = computeHealth(snapshot);
+  const rulesConfig = parseRulesFile(absoluteRoot);
+  const gitHistory = collectGitHistory(
+    absoluteRoot,
+    rulesConfig?.evolution,
+  );
+
+  const health = computeHealth(snapshot, gitHistory, rulesConfig?.evolution);
   return { snapshot, health };
 }
 

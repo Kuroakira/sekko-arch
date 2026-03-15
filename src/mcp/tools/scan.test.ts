@@ -83,6 +83,21 @@ vi.mock("../../cli/scan.js", () => ({
           grade: "A",
           details: {},
         },
+        codeChurn: { name: "codeChurn", rawValue: 0, grade: "A", details: {} },
+        changeCoupling: {
+          name: "changeCoupling",
+          rawValue: 0,
+          grade: "A",
+          details: {},
+        },
+        busFactor: { name: "busFactor", rawValue: 0, grade: "A", details: {} },
+        codeAge: { name: "codeAge", rawValue: 0, grade: "A", details: {} },
+        testCoverageGap: {
+          name: "testCoverageGap",
+          rawValue: 0,
+          grade: "A",
+          details: {},
+        },
       },
     },
   })),
@@ -95,7 +110,7 @@ describe("scanToolDefinition", () => {
 
   it("has a non-empty description", () => {
     expect(scanToolDefinition.description).toBe(
-      "Scan a TypeScript project and return architecture health scores across 19 dimensions",
+      "Scan a TypeScript project and return architecture health scores across 24 dimensions",
     );
   });
 
@@ -116,7 +131,7 @@ describe("handleScan", () => {
       unknown
     >;
     expect(parsed.compositeGrade).toBe("B");
-    expect(Object.keys(parsed.dimensions as object)).toHaveLength(19);
+    expect(Object.keys(parsed.dimensions as object)).toHaveLength(24);
   });
 
   it("filters dimensions when specified", async () => {

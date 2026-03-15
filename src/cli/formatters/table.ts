@@ -3,11 +3,22 @@ import type {
   DimensionResult,
   DimensionName,
 } from "../../types/metrics.js";
-import { DIMENSION_REGISTRY } from "../../dimensions.js";
+import {
+  DIMENSION_REGISTRY,
+  type DimensionCategory,
+} from "../../dimensions.js";
 
 const INTEGER_DIMENSIONS: ReadonlySet<string> = new Set(
   DIMENSION_REGISTRY.filter((d) => d.isInteger).map((d) => d.name),
 );
+
+const CATEGORY_LABELS: Readonly<Record<DimensionCategory, string>> = {
+  "module-structure": "Module Structure",
+  "file-function": "File & Function",
+  architecture: "Architecture",
+  evolution: "Evolution",
+  "test-structure": "Test & Structure",
+};
 
 const MAX_DETAIL_ITEMS = 5;
 
@@ -131,6 +142,35 @@ const DETAIL_FORMATTERS: Readonly<Record<DimensionName, DetailFormatter>> = {
   attackSurface: (d) => [
     `${d["reachableCount"]}/${d["totalFiles"]} files reachable`,
   ],
+  codeChurn: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; churn: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (churn=${f.churn})`);
+  },
+  changeCoupling: (d) => {
+    const pairs = d["pairs"] as
+      | Array<{ fileA: string; fileB: string; count: number }>
+      | undefined;
+    if (!pairs?.length) return [];
+    return pairs.map((p) => `${p.fileA} <-> ${p.fileB} (${p.count}x)`);
+  },
+  busFactor: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; authorCount: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (${f.authorCount} author(s))`);
+  },
+  codeAge: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; daysSinceUpdate: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (${f.daysSinceUpdate} days)`);
+  },
+  testCoverageGap: formatStringList("files"),
 };
 
 function formatDetailItems(
@@ -194,7 +234,13 @@ export function formatTable(report: HealthReport): string {
   );
   lines.push(separator);
 
+  let currentCategory: DimensionCategory | undefined;
   for (const config of DIMENSION_REGISTRY) {
+    if (config.category !== currentCategory) {
+      currentCategory = config.category;
+      lines.push("");
+      lines.push(`${indent}${CATEGORY_LABELS[currentCategory]}`);
+    }
     const dim = report.dimensions[config.name];
     const value = formatValue(dim);
     lines.push(

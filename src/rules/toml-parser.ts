@@ -7,6 +7,7 @@ import type {
   LayerConfig,
   BoundaryConfig,
   IgnoreConfig,
+  EvolutionConfig,
 } from "../types/rules.js";
 
 function toConstraints(
@@ -68,6 +69,25 @@ function toBoundaryConfig(item: unknown): BoundaryConfig | null {
   return result;
 }
 
+function toEvolutionConfig(
+  raw: Record<string, unknown>,
+): EvolutionConfig | undefined {
+  const evolution = raw["evolution"];
+  if (evolution == null || typeof evolution !== "object") return undefined;
+  const obj = evolution as Record<string, unknown>;
+  const result: {
+    days?: number;
+    changeCouplingThreshold?: number;
+    codeAgeThresholdDays?: number;
+  } = {};
+  if (typeof obj["days"] === "number") result.days = obj.days;
+  if (typeof obj["change_coupling_threshold"] === "number")
+    result.changeCouplingThreshold = obj.change_coupling_threshold;
+  if (typeof obj["code_age_threshold_days"] === "number")
+    result.codeAgeThresholdDays = obj.code_age_threshold_days;
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export function parseRulesFile(configDir: string): RulesConfig | null {
   const filePath = join(configDir, ".sekko-arch", "rules.toml");
 
@@ -92,6 +112,7 @@ export function parseRulesFile(configDir: string): RulesConfig | null {
       layers?: readonly LayerConfig[];
       boundaries?: readonly BoundaryConfig[];
       ignore?: IgnoreConfig;
+      evolution?: EvolutionConfig;
     } = {};
 
     const constraints = toConstraints(parsed);
@@ -115,6 +136,9 @@ export function parseRulesFile(configDir: string): RulesConfig | null {
 
     const ignore = toIgnoreConfig(parsed);
     if (ignore) config.ignore = ignore;
+
+    const evolution = toEvolutionConfig(parsed);
+    if (evolution) config.evolution = evolution;
 
     return config;
   } catch (error: unknown) {

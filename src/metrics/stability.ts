@@ -1,7 +1,7 @@
 import {
   STABILITY_INSTABILITY_THRESHOLD,
   STABILITY_FAN_IN_THRESHOLD,
-} from "./thresholds.js";
+} from "./detection-thresholds.js";
 
 export function isStable(
   file: string,

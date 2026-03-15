@@ -95,7 +95,7 @@ describe("E2E: full pipeline", () => {
   });
 
   describe("scan command", () => {
-    it("produces table output with all 19 dimensions", () => {
+    it("produces table output with all 24 dimensions", () => {
       const { stdout, exitCode } = runCli("scan", ".");
 
       expect(exitCode).toBe(0);
@@ -116,7 +116,7 @@ describe("E2E: full pipeline", () => {
       expect(Number(match?.[1] ?? "0")).toBe(10);
     });
 
-    it("produces valid JSON with all 19 dimensions and correct file count", () => {
+    it("produces valid JSON with all 24 dimensions and correct file count", () => {
       const result = scanJson();
 
       expect(result.compositeGrade).toMatch(/^[A-DF]$/);

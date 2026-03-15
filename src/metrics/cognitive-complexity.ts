@@ -1,5 +1,5 @@
 import type { FileNode, FuncInfo } from "../types/core.js";
-import { COGNITIVE_COMPLEXITY_THRESHOLD } from "./thresholds.js";
+import { COGNITIVE_COMPLEXITY_THRESHOLD } from "./detection-thresholds.js";
 
 export interface CognitiveComplexityResult {
   readonly ratio: number;

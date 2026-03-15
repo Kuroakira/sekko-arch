@@ -13,9 +13,9 @@ describe("createProgram", () => {
     expect(program.name()).toBe("sekko-arch");
   });
 
-  it("has version 0.1.0", () => {
+  it("has version 0.2.0", () => {
     const program = createProgram();
-    expect(program.version()).toBe("0.1.0");
+    expect(program.version()).toBe("0.2.0");
   });
 
   it("has a global --format option defaulting to table", async () => {
@@ -149,15 +149,12 @@ describe("subcommands", () => {
     expect(saveOption).toBeDefined();
   });
 
-  it("gate --save defaults to false", async () => {
+  it("gate --save defaults to false", () => {
     const program = createProgram();
-    program.exitOverride();
-    program.configureOutput({ writeErr: () => {}, writeOut: () => {} });
-
-    await program.parseAsync(["node", "sekko-arch", "gate"]);
-
     const gate = findCommand(program, "gate");
-    expect(gate.opts<{ save: boolean }>().save).toBe(false);
+    const saveOption = gate.options.find((opt) => opt.long === "--save");
+    expect(saveOption).toBeDefined();
+    expect(saveOption?.defaultValue).toBe(false);
   });
 
   it("has mcp subcommand", () => {

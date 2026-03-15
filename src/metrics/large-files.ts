@@ -1,5 +1,5 @@
 import type { FileNode } from "../types/core.js";
-import { LARGE_FILE_LINE_THRESHOLD } from "./thresholds.js";
+import { LARGE_FILE_LINE_THRESHOLD } from "./detection-thresholds.js";
 
 export interface LargeFileResult {
   readonly ratio: number;

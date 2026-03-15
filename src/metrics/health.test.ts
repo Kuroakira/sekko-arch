@@ -16,7 +16,7 @@ function makeFile(
 }
 
 describe("computeHealth", () => {
-  it("returns a HealthReport with all 19 dimensions for a minimal snapshot", () => {
+  it("returns a HealthReport with all 24 dimensions for a minimal snapshot", () => {
     const files = [
       makeFile("src/auth/login.ts"),
       makeFile("src/auth/signup.ts"),
@@ -35,7 +35,7 @@ describe("computeHealth", () => {
     expect(report.scanDurationMs).toBeGreaterThanOrEqual(0);
 
     const dimensionNames = Object.keys(report.dimensions);
-    expect(dimensionNames).toHaveLength(19);
+    expect(dimensionNames).toHaveLength(24);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
     expect(dimensionNames).toContain("depth");
@@ -208,7 +208,7 @@ describe("computeHealth", () => {
     expect(details.count).toBeGreaterThanOrEqual(1);
   });
 
-  it("populates details for all 19 dimensions", () => {
+  it("populates details for all 24 dimensions", () => {
     const files = [
       makeFile("src/auth/login.ts"),
       makeFile("src/utils/helpers.ts"),
