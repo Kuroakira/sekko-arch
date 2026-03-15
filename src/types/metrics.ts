@@ -21,7 +21,12 @@ export type DimensionName =
   | "deadCode"
   | "comments"
   | "distanceFromMainSeq"
-  | "attackSurface";
+  | "attackSurface"
+  | "codeChurn"
+  | "changeCoupling"
+  | "busFactor"
+  | "codeAge"
+  | "testCoverageGap";
 
 export interface DimensionResult {
   readonly name: DimensionName;

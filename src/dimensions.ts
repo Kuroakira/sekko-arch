@@ -2,9 +2,17 @@ import type { DimensionName, Grade, GradeValue } from "./types/metrics.js";
 
 export type ThresholdEntry = readonly [number, Grade];
 
+export type DimensionCategory =
+  | "module-structure"
+  | "file-function"
+  | "architecture"
+  | "evolution"
+  | "test-structure";
+
 export interface DimensionConfig {
   readonly name: DimensionName;
   readonly label: string;
+  readonly category: DimensionCategory;
   readonly isInteger: boolean;
   readonly thresholds: readonly ThresholdEntry[];
 }
@@ -18,9 +26,11 @@ export interface DimensionConfig {
  * Everything else (thresholds, labels, formatters, gate) derives from this registry.
  */
 export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
+  // ── Module Structure ──
   {
     name: "cycles",
     label: "Cycles",
+    category: "module-structure",
     isInteger: true,
     thresholds: [
       [0, "A"],
@@ -33,6 +43,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "coupling",
     label: "Coupling",
+    category: "module-structure",
     isInteger: false,
     thresholds: [
       [0.2, "A"],
@@ -42,71 +53,12 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
       [Infinity, "F"],
     ],
   },
-  {
-    name: "depth",
-    label: "Depth",
-    isInteger: true,
-    thresholds: [
-      [5, "A"],
-      [8, "B"],
-      [10, "C"],
-      [15, "D"],
-      [Infinity, "F"],
-    ],
-  },
-  {
-    name: "godFiles",
-    label: "God Files",
-    isInteger: false,
-    thresholds: [
-      [0, "A"],
-      [0.01, "B"],
-      [0.03, "C"],
-      [0.05, "D"],
-      [Infinity, "F"],
-    ],
-  },
-  {
-    name: "complexFn",
-    label: "Complex Fns",
-    isInteger: false,
-    thresholds: [
-      [0.02, "A"],
-      [0.05, "B"],
-      [0.1, "C"],
-      [0.2, "D"],
-      [Infinity, "F"],
-    ],
-  },
-  {
-    name: "levelization",
-    label: "Levelization",
-    isInteger: false,
-    thresholds: [
-      [0, "A"],
-      [0.02, "B"],
-      [0.05, "C"],
-      [0.1, "D"],
-      [Infinity, "F"],
-    ],
-  },
-  {
-    name: "blastRadius",
-    label: "Blast Radius",
-    isInteger: false,
-    thresholds: [
-      [0.1, "A"],
-      [0.2, "B"],
-      [0.35, "C"],
-      [0.5, "D"],
-      [Infinity, "F"],
-    ],
-  },
   // Inverted metrics: rawValue = 1 - actualRatio, so lower rawValue = better score.
   // cohesion: rawValue = 1 - minCohesion (high cohesion → low rawValue → A)
   {
     name: "cohesion",
     label: "Cohesion",
+    category: "module-structure",
     isInteger: false,
     thresholds: [
       [0.5, "A"],
@@ -119,6 +71,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "entropy",
     label: "Entropy",
+    category: "module-structure",
     isInteger: false,
     thresholds: [
       [0.4, "A"],
@@ -128,21 +81,11 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
       [Infinity, "F"],
     ],
   },
+  // ── File & Function ──
   {
-    name: "cognitiveComplexity",
-    label: "Cognitive Complexity",
-    isInteger: false,
-    thresholds: [
-      [0.02, "A"],
-      [0.05, "B"],
-      [0.1, "C"],
-      [0.2, "D"],
-      [Infinity, "F"],
-    ],
-  },
-  {
-    name: "hotspots",
-    label: "Hotspots",
+    name: "godFiles",
+    label: "God Files",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0, "A"],
@@ -153,8 +96,35 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
     ],
   },
   {
+    name: "complexFn",
+    label: "Complex Fns",
+    category: "file-function",
+    isInteger: false,
+    thresholds: [
+      [0.02, "A"],
+      [0.05, "B"],
+      [0.1, "C"],
+      [0.2, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "cognitiveComplexity",
+    label: "Cognitive Complexity",
+    category: "file-function",
+    isInteger: false,
+    thresholds: [
+      [0.02, "A"],
+      [0.05, "B"],
+      [0.1, "C"],
+      [0.2, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
     name: "longFunctions",
     label: "Long Functions",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.05, "A"],
@@ -167,6 +137,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "largeFiles",
     label: "Large Files",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.05, "A"],
@@ -179,6 +150,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "highParams",
     label: "High Params",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.03, "A"],
@@ -191,6 +163,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "duplication",
     label: "Duplication",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.01, "A"],
@@ -203,6 +176,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "deadCode",
     label: "Dead Code",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.03, "A"],
@@ -216,6 +190,7 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "comments",
     label: "Comments",
+    category: "file-function",
     isInteger: false,
     thresholds: [
       [0.92, "A"],
@@ -225,9 +200,50 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
       [Infinity, "F"],
     ],
   },
+  // ── Architecture ──
+  {
+    name: "depth",
+    label: "Depth",
+    category: "architecture",
+    isInteger: true,
+    thresholds: [
+      [5, "A"],
+      [8, "B"],
+      [10, "C"],
+      [15, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "levelization",
+    label: "Levelization",
+    category: "architecture",
+    isInteger: false,
+    thresholds: [
+      [0, "A"],
+      [0.02, "B"],
+      [0.05, "C"],
+      [0.1, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "blastRadius",
+    label: "Blast Radius",
+    category: "architecture",
+    isInteger: false,
+    thresholds: [
+      [0.1, "A"],
+      [0.2, "B"],
+      [0.35, "C"],
+      [0.5, "D"],
+      [Infinity, "F"],
+    ],
+  },
   {
     name: "distanceFromMainSeq",
     label: "Distance from Main Seq",
+    category: "architecture",
     isInteger: false,
     thresholds: [
       [0.3, "A"],
@@ -240,12 +256,93 @@ export const DIMENSION_REGISTRY: readonly DimensionConfig[] = [
   {
     name: "attackSurface",
     label: "Attack Surface",
+    category: "architecture",
     isInteger: false,
     thresholds: [
       [0.75, "A"],
       [0.85, "B"],
       [0.92, "C"],
       [0.97, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "hotspots",
+    label: "Hotspots",
+    category: "architecture",
+    isInteger: false,
+    thresholds: [
+      [0, "A"],
+      [0.01, "B"],
+      [0.03, "C"],
+      [0.05, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  // ── Evolution ──
+  {
+    name: "codeChurn",
+    label: "Code Churn",
+    category: "evolution",
+    isInteger: false,
+    thresholds: [
+      [0.5, "A"],
+      [0.6, "B"],
+      [0.7, "C"],
+      [0.85, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "changeCoupling",
+    label: "Change Coupling",
+    category: "evolution",
+    isInteger: false,
+    thresholds: [
+      [0, "A"],
+      [0.02, "B"],
+      [0.05, "C"],
+      [0.1, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "busFactor",
+    label: "Bus Factor",
+    category: "evolution",
+    isInteger: false,
+    thresholds: [
+      [0.2, "A"],
+      [0.35, "B"],
+      [0.5, "C"],
+      [0.7, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  {
+    name: "codeAge",
+    label: "Code Age",
+    category: "evolution",
+    isInteger: false,
+    thresholds: [
+      [0.1, "A"],
+      [0.2, "B"],
+      [0.35, "C"],
+      [0.5, "D"],
+      [Infinity, "F"],
+    ],
+  },
+  // ── Test & Structure ──
+  {
+    name: "testCoverageGap",
+    label: "Test Coverage Gap",
+    category: "test-structure",
+    isInteger: false,
+    thresholds: [
+      [0.1, "A"],
+      [0.2, "B"],
+      [0.35, "C"],
+      [0.5, "D"],
       [Infinity, "F"],
     ],
   },

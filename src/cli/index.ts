@@ -13,7 +13,7 @@ export function createProgram(): Command {
 
   program
     .name("sekko-arch")
-    .version("0.1.0")
+    .version("0.2.0")
     .description("Architecture analysis CLI")
     .addOption(
       new Option("--format <format>", "output format")

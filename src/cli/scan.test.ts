@@ -43,12 +43,12 @@ describe("executePipeline", () => {
     expect(["A", "B", "C", "D", "F"]).toContain(health.compositeGrade);
   });
 
-  it("returns all 19 dimensions", () => {
+  it("returns all 24 dimensions", () => {
     const dir = createFixtureDir();
     const { health } = executePipeline(dir);
 
     const dimensionNames = Object.keys(health.dimensions);
-    expect(dimensionNames).toHaveLength(19);
+    expect(dimensionNames).toHaveLength(24);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
     expect(dimensionNames).toContain("cohesion");

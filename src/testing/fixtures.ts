@@ -38,6 +38,11 @@ const DEFAULT_RAW_VALUES: Readonly<Record<DimensionName, number>> = {
   comments: 0.85,
   distanceFromMainSeq: 0.15,
   attackSurface: 0.25,
+  codeChurn: 0,
+  changeCoupling: 0,
+  busFactor: 0,
+  codeAge: 0,
+  testCoverageGap: 0,
 };
 
 export function makeAllDimensionGrades(

@@ -35,7 +35,7 @@ describe("computeHealth", () => {
     expect(report.scanDurationMs).toBeGreaterThanOrEqual(0);
 
     const dimensionNames = Object.keys(report.dimensions);
-    expect(dimensionNames).toHaveLength(19);
+    expect(dimensionNames).toHaveLength(24);
     expect(dimensionNames).toContain("cycles");
     expect(dimensionNames).toContain("coupling");
     expect(dimensionNames).toContain("depth");

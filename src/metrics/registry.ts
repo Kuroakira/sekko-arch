@@ -243,6 +243,27 @@ export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
       });
     },
   },
+  // Stub computations for evolution metrics (replaced in Group C/D/E)
+  {
+    name: "codeChurn",
+    compute: () => makeDimensionResult("codeChurn", 0, { files: [] }),
+  },
+  {
+    name: "changeCoupling",
+    compute: () => makeDimensionResult("changeCoupling", 0, { pairs: [] }),
+  },
+  {
+    name: "busFactor",
+    compute: () => makeDimensionResult("busFactor", 0, { files: [] }),
+  },
+  {
+    name: "codeAge",
+    compute: () => makeDimensionResult("codeAge", 0, { files: [] }),
+  },
+  {
+    name: "testCoverageGap",
+    compute: () => makeDimensionResult("testCoverageGap", 0, { files: [] }),
+  },
 ];
 
 // Validate that METRIC_COMPUTATIONS covers every DimensionName

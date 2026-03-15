@@ -131,6 +131,35 @@ const DETAIL_FORMATTERS: Readonly<Record<DimensionName, DetailFormatter>> = {
   attackSurface: (d) => [
     `${d["reachableCount"]}/${d["totalFiles"]} files reachable`,
   ],
+  codeChurn: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; churn: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (churn=${f.churn})`);
+  },
+  changeCoupling: (d) => {
+    const pairs = d["pairs"] as
+      | Array<{ fileA: string; fileB: string; count: number }>
+      | undefined;
+    if (!pairs?.length) return [];
+    return pairs.map((p) => `${p.fileA} <-> ${p.fileB} (${p.count}x)`);
+  },
+  busFactor: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; authorCount: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (${f.authorCount} author(s))`);
+  },
+  codeAge: (d) => {
+    const files = d["files"] as
+      | Array<{ file: string; daysSinceUpdate: number }>
+      | undefined;
+    if (!files?.length) return [];
+    return files.map((f) => `${f.file} (${f.daysSinceUpdate} days)`);
+  },
+  testCoverageGap: formatStringList("files"),
 };
 
 function formatDetailItems(
