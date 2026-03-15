@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "sekko-arch": {
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/cli/index.js", "mcp"]
+      "command": "npx",
+      "args": ["-y", "sekko-arch", "mcp"]
     }
   }
 }
