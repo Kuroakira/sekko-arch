@@ -14,7 +14,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 |-------|------|-------|-------------|--------|
 | A | 型システム・基盤拡張 | T01-T05 | DimensionName 24メンバー化, categoryフィールド追加, EvolutionConfig, GitHistory型, テストヘルパー24次元対応 | **done** (ab22716, 2026-03-15) |
 | B | Git履歴モジュール | T06-T08 | `src/git/` — 型定義, git log収集・解析, パイプライン前段統合 | **done** (2026-03-15) |
-| C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | pending |
+| C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | **done** (2026-03-15) |
 | D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | pending |
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | pending |
 | F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | pending |
@@ -230,7 +230,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 > 4メトリクスは相互依存なし。各メトリクスは`MetricContext.gitHistory`を参照し、`undefined`の場合はスキップ（rawValue=0, grade="A"）。
 
-#### T09: Code Churn（コードチャーン集中度）
+#### [DONE] T09: Code Churn（コードチャーン集中度）(completed 2026-03-15)
 
 - **Description**: Nagappan & Ball (2005)の相対チャーン指標を実装。上位10%のファイルがチャーン全体の何%を占めるかを計測。
 - **Files**: `src/metrics/code-churn.ts`（新規作成）
@@ -244,7 +244,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - 空のfileChurns: rawValue=0
 - **Acceptance**: rawValueが「上位10%ファイルのチャーン集中度」。Design Docの閾値でA-Fグレード。
 
-#### T10: Change Coupling（変更カップリング）
+#### [DONE] T10: Change Coupling（変更カップリング）(completed 2026-03-15)
 
 - **Description**: Gall et al. (1998)の論理的結合検出に基づく。同一コミットで変更されたファイルペアの共起頻度を計測し、暗黙的な結合を検出。
 - **Files**: `src/metrics/change-coupling.ts`（新規作成）
@@ -258,7 +258,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - 閾値のカスタマイズ（EvolutionConfigから）
 - **Acceptance**: 共起回数ベース（N >= changeCouplingThreshold）で判定。rawValueは「高共起ペアに含まれるファイルの比率」。
 
-#### T11: Bus Factor（バス因子）
+#### [DONE] T11: Bus Factor（バス因子）(completed 2026-03-15)
 
 - **Description**: Ricca et al. (2011)のアプローチに基づく。単一著者のみがコミットしたファイルの比率を計測。
 - **Files**: `src/metrics/bus-factor.ts`（新規作成）
@@ -271,7 +271,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - fileAuthorsが空: rawValue=0
 - **Acceptance**: rawValueが「単一著者ファイルの比率」。Design Docの閾値でA-Fグレード。
 
-#### T12: Code Age（コード年齢）
+#### [DONE] T12: Code Age（コード年齢）(completed 2026-03-15)
 
 - **Description**: 365日以上未更新のファイル比率を計測。codeAgeThresholdDays（デフォルト365）はEvolutionConfigで設定可能。
 - **Files**: `src/metrics/code-age.ts`（新規作成）
