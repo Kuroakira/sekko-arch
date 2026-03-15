@@ -18,7 +18,7 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 | D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | **done** (2026-03-15) |
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | **done** (2026-03-15) |
 | F | Web可視化 | T18-T21 | `visualize`サブコマンド, HTML Generator, Treemap, DSM | **done** (2026-03-15) |
-| G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | pending |
+| G | テーブルフォーマッタ・カテゴリ表示 | T22-T23 | カテゴリヘッダー表示, 5新メトリクスのDETAIL_FORMATTERS | **done** (2026-03-15) |
 | H | 統合テスト・検証 | T24-T26 | 自己スキャン24次元, パフォーマンスベンチマーク, Git不在環境テスト | pending |
 
 ### Dependency Flow
@@ -436,7 +436,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 
 ### Group G: テーブルフォーマッタ・カテゴリ表示
 
-#### T22: カテゴリヘッダー表示
+#### [DONE] T22: カテゴリヘッダー表示 (completed 2026-03-15)
 
 - **Description**: `src/cli/formatters/table.ts`の`formatTable()`にカテゴリヘッダーを追加。DIMENSION_REGISTRYのcategoryフィールドでグループ化し、カテゴリ切り替え時にヘッダー行を挿入。
 - **Files**: `src/cli/formatters/table.ts`
@@ -451,7 +451,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - 24次元の全メトリクスが表示される
 - **Acceptance**: tableフォーマッタが5カテゴリヘッダー付きで24メトリクスを表示
 
-#### T23: 5新メトリクスのDETAIL_FORMATTERS
+#### [DONE] T23: 5新メトリクスのDETAIL_FORMATTERS (completed 2026-03-15)
 
 - **Description**: `DETAIL_FORMATTERS`に5つの新メトリクスのフォーマッタを追加。C/D/Fグレードの問題箇所表示に対応。
 - **Files**: `src/cli/formatters/table.ts`

@@ -3,11 +3,22 @@ import type {
   DimensionResult,
   DimensionName,
 } from "../../types/metrics.js";
-import { DIMENSION_REGISTRY } from "../../dimensions.js";
+import {
+  DIMENSION_REGISTRY,
+  type DimensionCategory,
+} from "../../dimensions.js";
 
 const INTEGER_DIMENSIONS: ReadonlySet<string> = new Set(
   DIMENSION_REGISTRY.filter((d) => d.isInteger).map((d) => d.name),
 );
+
+const CATEGORY_LABELS: Readonly<Record<DimensionCategory, string>> = {
+  "module-structure": "Module Structure",
+  "file-function": "File & Function",
+  architecture: "Architecture",
+  evolution: "Evolution",
+  "test-structure": "Test & Structure",
+};
 
 const MAX_DETAIL_ITEMS = 5;
 
@@ -223,7 +234,13 @@ export function formatTable(report: HealthReport): string {
   );
   lines.push(separator);
 
+  let currentCategory: DimensionCategory | undefined;
   for (const config of DIMENSION_REGISTRY) {
+    if (config.category !== currentCategory) {
+      currentCategory = config.category;
+      lines.push("");
+      lines.push(`${indent}${CATEGORY_LABELS[currentCategory]}`);
+    }
     const dim = report.dimensions[config.name];
     const value = formatValue(dim);
     lines.push(

@@ -163,6 +163,79 @@ describe("formatTable", () => {
     expect(separatorLines.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("displays 5 category headers", () => {
+    const output = formatTable(makeHealth());
+    expect(output).toContain("Module Structure");
+    expect(output).toContain("File & Function");
+    expect(output).toContain("Architecture");
+    expect(output).toContain("Evolution");
+    expect(output).toContain("Test & Structure");
+  });
+
+  it("groups metrics under their category headers", () => {
+    const output = formatTable(makeHealth());
+    const lines = output.split("\n");
+
+    // Use exact category labels (not substrings of other lines)
+    const moduleStructureIdx = lines.findIndex(
+      (l) => l.trim() === "Module Structure",
+    );
+    const fileAndFnIdx = lines.findIndex(
+      (l) => l.trim() === "File & Function",
+    );
+    const architectureIdx = lines.findIndex(
+      (l) => l.trim() === "Architecture",
+    );
+    const evolutionIdx = lines.findIndex((l) => l.trim() === "Evolution");
+    const testStructureIdx = lines.findIndex(
+      (l) => l.trim() === "Test & Structure",
+    );
+
+    // Categories appear in order
+    expect(moduleStructureIdx).toBeLessThan(fileAndFnIdx);
+    expect(fileAndFnIdx).toBeLessThan(architectureIdx);
+    expect(architectureIdx).toBeLessThan(evolutionIdx);
+    expect(evolutionIdx).toBeLessThan(testStructureIdx);
+
+    // Cycles appears after Module Structure header
+    const cyclesIdx = lines.findIndex((l) => l.includes("Cycles"));
+    expect(cyclesIdx).toBeGreaterThan(moduleStructureIdx);
+    expect(cyclesIdx).toBeLessThan(fileAndFnIdx);
+
+    // Depth appears after Architecture header
+    const depthIdx = lines.findIndex((l) => l.includes("Depth"));
+    expect(depthIdx).toBeGreaterThan(architectureIdx);
+    expect(depthIdx).toBeLessThan(evolutionIdx);
+
+    // Code Churn appears after Evolution header
+    const codeChurnIdx = lines.findIndex((l) => l.includes("Code Churn"));
+    expect(codeChurnIdx).toBeGreaterThan(evolutionIdx);
+    expect(codeChurnIdx).toBeLessThan(testStructureIdx);
+  });
+
+  it("displays all 24 metrics across category groups", () => {
+    const output = formatTable(makeHealth());
+    const lines = output.split("\n");
+    // Count non-header, non-separator data lines containing a grade
+    const dataLines = lines.filter(
+      (l) =>
+        l.trim().length > 0 &&
+        !l.includes("─") &&
+        !l.includes("Dimension") &&
+        !l.includes("Composite") &&
+        !l.includes("sekko-arch") &&
+        !l.includes("files scanned") &&
+        !l.includes("Module Structure") &&
+        !l.includes("File & Function") &&
+        !l.includes("Architecture") &&
+        !l.includes("Evolution") &&
+        !l.includes("Test & Structure") &&
+        !l.includes("Problem Areas") &&
+        /[ABCDF]\s*$/.test(l.trimEnd()),
+    );
+    expect(dataLines.length).toBe(24);
+  });
+
   it("does not show problem areas when all grades are A or B", () => {
     const output = formatTable(makeHealth());
     expect(output).not.toContain("Problem Areas");
@@ -245,6 +318,109 @@ describe("formatTable", () => {
     });
     const output = formatTable(report);
     expect(output).toContain("src/a.ts \u2192 src/b.ts \u2192 src/c.ts");
+  });
+
+  it("formats codeChurn details with churn value", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        codeChurn: makeDimension("codeChurn", 0.8, "C", {
+          files: [
+            { file: "src/hot.ts", churn: 450 },
+            { file: "src/warm.ts", churn: 200 },
+          ],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/hot.ts (churn=450)");
+    expect(output).toContain("src/warm.ts (churn=200)");
+  });
+
+  it("formats changeCoupling details with pair and count", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        changeCoupling: makeDimension("changeCoupling", 0.1, "D", {
+          pairs: [{ fileA: "src/a.ts", fileB: "src/b.ts", count: 12 }],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/a.ts <-> src/b.ts (12x)");
+  });
+
+  it("formats busFactor details with author count", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        busFactor: makeDimension("busFactor", 0.6, "C", {
+          files: [{ file: "src/lonely.ts", authorCount: 1 }],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/lonely.ts (1 author(s))");
+  });
+
+  it("formats codeAge details with days since update", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        codeAge: makeDimension("codeAge", 0.4, "C", {
+          files: [{ file: "src/old.ts", daysSinceUpdate: 500 }],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/old.ts (500 days)");
+  });
+
+  it("formats testCoverageGap details with file list", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        testCoverageGap: makeDimension("testCoverageGap", 0.4, "C", {
+          files: ["src/untested.ts", "src/orphan.ts"],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/untested.ts");
+    expect(output).toContain("src/orphan.ts");
+  });
+
+  it("truncates new metric details beyond 5 items", () => {
+    const files = Array.from({ length: 8 }, (_, i) => ({
+      file: `src/churn${i}.ts`,
+      churn: 100 + i,
+    }));
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        codeChurn: makeDimension("codeChurn", 0.9, "F", { files }),
+      },
+    });
+    const output = formatTable(report);
+    expect(output).toContain("src/churn0.ts");
+    expect(output).toContain("src/churn4.ts");
+    expect(output).not.toContain("src/churn5.ts");
+    expect(output).toContain("...and 3 more");
+  });
+
+  it("handles empty details for new metrics", () => {
+    const report = makeHealth({
+      dimensions: {
+        ...makeHealth().dimensions,
+        codeChurn: makeDimension("codeChurn", 0.8, "C", { files: [] }),
+        changeCoupling: makeDimension("changeCoupling", 0.1, "D", {
+          pairs: [],
+        }),
+      },
+    });
+    const output = formatTable(report);
+    // Should not crash; problem area headers appear but no detail items
+    expect(output).toContain("Problem Areas");
   });
 
   it("formats largeFiles details with line count", () => {
