@@ -160,6 +160,12 @@ describe("subcommands", () => {
     expect(gate.opts<{ save: boolean }>().save).toBe(false);
   });
 
+  it("has mcp subcommand", () => {
+    const program = createProgram();
+    const mcp = findCommand(program, "mcp");
+    expect(mcp.name()).toBe("mcp");
+  });
+
   it("gate --save can be enabled", async () => {
     const program = createProgram();
     program.exitOverride();

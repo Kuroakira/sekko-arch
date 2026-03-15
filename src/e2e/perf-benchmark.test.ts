@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { executePipeline } from "../cli/scan.js";
+import { DIMENSION_NAMES } from "../dimensions.js";
 
 // Design doc target: 5,000 files in 15 seconds on 4 cores (single-threaded)
 const FILE_COUNT = 5000;
@@ -112,13 +113,11 @@ describe("Performance: scan benchmark", () => {
     expect(health.compositeGrade).toMatch(/^[A-DF]$/);
 
     const dims = health.dimensions;
-    expect(dims.cycles.grade).toMatch(/^[A-DF]$/);
-    expect(dims.coupling.grade).toMatch(/^[A-DF]$/);
-    expect(dims.depth.grade).toMatch(/^[A-DF]$/);
-    expect(dims.godFiles.grade).toMatch(/^[A-DF]$/);
-    expect(dims.complexFn.grade).toMatch(/^[A-DF]$/);
-    expect(dims.levelization.grade).toMatch(/^[A-DF]$/);
-    expect(dims.blastRadius.grade).toMatch(/^[A-DF]$/);
+    for (const name of DIMENSION_NAMES) {
+      expect(dims[name].grade).toMatch(/^[A-DF]$/);
+      expect(dims[name].rawValue).toBeGreaterThanOrEqual(0);
+      expect(Number.isFinite(dims[name].rawValue)).toBe(true);
+    }
 
     // Scan duration recorded in health report
     expect(health.scanDurationMs).toBeGreaterThanOrEqual(1);

@@ -208,7 +208,7 @@ describe("computeHealth", () => {
     expect(details.count).toBeGreaterThanOrEqual(1);
   });
 
-  it("populates details for original 7 dimensions", () => {
+  it("populates details for all 19 dimensions", () => {
     const files = [
       makeFile("src/auth/login.ts"),
       makeFile("src/utils/helpers.ts"),
@@ -220,10 +220,58 @@ describe("computeHealth", () => {
 
     const report = computeHealth(snapshot);
 
-    const originalDims = ["cycles", "coupling", "depth", "godFiles", "complexFn", "levelization", "blastRadius"] as const;
-    for (const name of originalDims) {
-      expect(report.dimensions[name].details).toBeDefined();
+    for (const dim of Object.values(report.dimensions)) {
+      expect(dim.details).toBeDefined();
     }
+  });
+
+  it("populates complexFn details with function file info", () => {
+    const complexFn = {
+      name: "heavyFunc",
+      startLine: 1,
+      endLine: 50,
+      lineCount: 50,
+      cc: 20,
+      paramCount: 3,
+      bodyHash: "hash-complex",
+      cognitiveComplexity: 0,
+    };
+    const files = [
+      makeFile("src/mod/a.ts", {
+        sa: { functions: [complexFn], classes: [], imports: [] },
+      }),
+    ];
+    const snapshot = makeSnapshot(files, []);
+
+    const report = computeHealth(snapshot);
+    const details = report.dimensions.complexFn.details as {
+      complexFunctions: Array<{ file: string; name: string; cc: number }>;
+    };
+    expect(details.complexFunctions).toHaveLength(1);
+    expect(details.complexFunctions[0]).toEqual({
+      file: "src/mod/a.ts",
+      name: "heavyFunc",
+      cc: 20,
+    });
+  });
+
+  it("populates blastRadius details with max file", () => {
+    const files = [
+      makeFile("src/a.ts"),
+      makeFile("src/b.ts"),
+      makeFile("src/c.ts"),
+    ];
+    const edges: ImportEdge[] = [
+      { fromFile: "src/b.ts", toFile: "src/a.ts" },
+      { fromFile: "src/c.ts", toFile: "src/a.ts" },
+    ];
+    const snapshot = makeSnapshot(files, edges);
+
+    const report = computeHealth(snapshot);
+    const details = report.dimensions.blastRadius.details as {
+      maxBlastRadiusFile: string;
+    };
+    expect(typeof details.maxBlastRadiusFile).toBe("string");
   });
 
   it("populates fileCount from snapshot", () => {

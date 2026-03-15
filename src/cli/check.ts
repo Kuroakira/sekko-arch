@@ -1,10 +1,17 @@
 import { resolve } from "node:path";
 import { executePipeline } from "./scan.js";
+import type { ScanOptions } from "../scanner/index.js";
 import { parseRulesFile, checkRules } from "../rules/index.js";
 
-export function runCheck(path: string): void {
+export function runCheck(
+  path: string,
+  options?: { readonly include?: readonly string[] },
+): void {
   const absolutePath = resolve(path);
-  const { snapshot, health } = executePipeline(absolutePath);
+  const scanOptions: ScanOptions | undefined = options?.include?.length
+    ? { include: options.include }
+    : undefined;
+  const { snapshot, health } = executePipeline(absolutePath, scanOptions);
 
   const config = parseRulesFile(absolutePath);
   if (config === null) {

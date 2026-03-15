@@ -16,7 +16,9 @@ function makeFanMaps(
 describe("computeDistanceFromMainSeq", () => {
   it("returns 0 for empty files", () => {
     const fanMaps = makeFanMaps({}, {});
-    expect(computeDistanceFromMainSeq([], fanMaps, new Map())).toBe(0);
+    const result = computeDistanceFromMainSeq([], fanMaps, new Map());
+    expect(result.maxDistance).toBe(0);
+    expect(result.worstModule).toBe("");
   });
 
   it("returns 0 for ideal main sequence (A + I = 1)", () => {
@@ -37,7 +39,8 @@ describe("computeDistanceFromMainSeq", () => {
       { "src/types/core.ts": 0 },
     );
 
-    expect(computeDistanceFromMainSeq(files, fanMaps, assignments)).toBe(0);
+    const result = computeDistanceFromMainSeq(files, fanMaps, assignments);
+    expect(result.maxDistance).toBe(0);
   });
 
   it("returns 1 for worst case (concrete + stable)", () => {
@@ -58,7 +61,9 @@ describe("computeDistanceFromMainSeq", () => {
       { "src/impl/service.ts": 0 },
     );
 
-    expect(computeDistanceFromMainSeq(files, fanMaps, assignments)).toBe(1);
+    const result = computeDistanceFromMainSeq(files, fanMaps, assignments);
+    expect(result.maxDistance).toBe(1);
+    expect(result.worstModule).toBe("src/impl");
   });
 
   it("skips modules with no classes (metric not applicable)", () => {
@@ -73,6 +78,6 @@ describe("computeDistanceFromMainSeq", () => {
       { "src/utils/helper.ts": 1 },
       { "src/utils/helper.ts": 1 },
     );
-    expect(computeDistanceFromMainSeq(files, fanMaps, assignments)).toBe(0);
+    expect(computeDistanceFromMainSeq(files, fanMaps, assignments).maxDistance).toBe(0);
   });
 });

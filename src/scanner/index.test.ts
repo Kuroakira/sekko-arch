@@ -117,4 +117,79 @@ export function main() {
     const paths = result.map((f) => f.path).sort();
     expect(paths).toEqual(["src/app.tsx", "src/index.ts"]);
   });
+
+  describe("ScanOptions", () => {
+    it("filters by --include (single directory)", () => {
+      createFile("src/api/handler.ts", "export const h = 1;\n");
+      createFile("src/models/user.ts", "export const u = 1;\n");
+      createFile("src/utils/helper.ts", "export const x = 1;\n");
+
+      const result = scanFiles(tmpDir, { include: ["src/api"] });
+      const paths = result.map((f) => f.path);
+      expect(paths).toEqual(["src/api/handler.ts"]);
+    });
+
+    it("filters by --include (multiple directories)", () => {
+      createFile("src/api/handler.ts", "export const h = 1;\n");
+      createFile("src/models/user.ts", "export const u = 1;\n");
+      createFile("src/utils/helper.ts", "export const x = 1;\n");
+
+      const result = scanFiles(tmpDir, {
+        include: ["src/api", "src/models"],
+      });
+      const paths = result.map((f) => f.path).sort();
+      expect(paths).toEqual(["src/api/handler.ts", "src/models/user.ts"]);
+    });
+
+    it("normalizes trailing slash in --include", () => {
+      createFile("src/api/handler.ts", "export const h = 1;\n");
+      createFile("src/models/user.ts", "export const u = 1;\n");
+
+      const result = scanFiles(tmpDir, { include: ["src/api/"] });
+      const paths = result.map((f) => f.path);
+      expect(paths).toEqual(["src/api/handler.ts"]);
+    });
+
+    it("returns all files when --include is undefined", () => {
+      createFile("src/api/handler.ts", "export const h = 1;\n");
+      createFile("src/models/user.ts", "export const u = 1;\n");
+
+      const result = scanFiles(tmpDir, {});
+      expect(result).toHaveLength(2);
+    });
+
+    it("filters by ignorePatterns", () => {
+      createFile("src/index.ts", "export const x = 1;\n");
+      createFile("src/generated/types.ts", "export type T = string;\n");
+      createFile("src/generated/api.ts", "export const api = {};\n");
+
+      const result = scanFiles(tmpDir, {
+        ignorePatterns: ["src/generated/**"],
+      });
+      const paths = result.map((f) => f.path);
+      expect(paths).toEqual(["src/index.ts"]);
+    });
+
+    it("does not fall back to TOML when ignorePatterns is empty array", () => {
+      createFile("src/index.ts", "export const x = 1;\n");
+      createFile("src/generated/types.ts", "export type T = string;\n");
+
+      // Explicit empty array means "ignore nothing" — TOML fallback is NOT used
+      const result = scanFiles(tmpDir, { ignorePatterns: [] });
+      expect(result).toHaveLength(2);
+    });
+
+    it("applies --include before [ignore] (combined)", () => {
+      createFile("src/api/handler.ts", "export const h = 1;\n");
+      createFile("src/api/generated.ts", "export const g = 1;\n");
+      createFile("src/models/user.ts", "export const u = 1;\n");
+
+      const result = scanFiles(tmpDir, {
+        include: ["src/api"],
+        ignorePatterns: ["**/*generated*"],
+      });
+      const paths = result.map((f) => f.path);
+      expect(paths).toEqual(["src/api/handler.ts"]);
+    });
+  });
 });

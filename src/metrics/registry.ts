@@ -1,23 +1,19 @@
 import type { DimensionName, DimensionResult } from "../types/metrics.js";
-import {
-  COMPLEXITY_CC_THRESHOLD,
-  COGNITIVE_COMPLEXITY_THRESHOLD,
-} from "./thresholds.js";
 import { DIMENSION_NAMES, gradeDimension } from "../dimensions.js";
 import { computeCoupling } from "./coupling.js";
 import { computeMaxDepth } from "./depth.js";
 import { detectGodFiles } from "./god-files.js";
-import { computeComplexFnRatio } from "./complex-fns.js";
+import { computeComplexFns } from "./complex-fns.js";
 import { computeLevelization } from "./levelization.js";
 import { computeBlastRadius } from "./blast-radius.js";
-import { computeCognitiveComplexityRatio } from "./cognitive-complexity.js";
+import { computeCognitiveComplexity } from "./cognitive-complexity.js";
 import { computeHotspotRatio } from "./hotspots.js";
-import { computeLongFunctionRatio } from "./long-functions.js";
-import { computeLargeFileRatio } from "./large-files.js";
-import { computeHighParamsRatio } from "./high-params.js";
-import { computeDuplicationRatio } from "./duplication.js";
+import { computeLongFunctions } from "./long-functions.js";
+import { computeLargeFiles } from "./large-files.js";
+import { computeHighParams } from "./high-params.js";
+import { computeDuplication } from "./duplication.js";
 import { computeDeadCodeRatio } from "./dead-code.js";
-import { computeCommentRawValue } from "./comments.js";
+import { computeComments } from "./comments.js";
 import { computeCohesion } from "./cohesion.js";
 import { computeEntropy } from "./entropy.js";
 import { computeDistanceFromMainSeq } from "./distance-main-seq.js";
@@ -45,189 +41,206 @@ export interface MetricComputation {
 export const METRIC_COMPUTATIONS: readonly MetricComputation[] = [
   {
     name: "cycles",
-    compute(ctx) {
-      return makeDimensionResult("cycles", ctx.cycleResult.cycleCount, {
+    compute: (ctx) =>
+      makeDimensionResult("cycles", ctx.cycleResult.cycleCount, {
         cycles: ctx.cycleResult.cycles,
-      });
-    },
+      }),
   },
   {
     name: "coupling",
     compute(ctx) {
-      const result = computeCoupling(
+      const r = computeCoupling(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
         ctx.fanMaps.fanIn,
         ctx.fanMaps.fanOut,
       );
-      return makeDimensionResult("coupling", result.score, {
-        crossModuleEdges: result.crossModuleEdges,
-        crossModuleToUnstable: result.crossModuleToUnstable,
+      return makeDimensionResult("coupling", r.score, {
+        crossModuleEdges: r.crossModuleEdges,
+        crossModuleToUnstable: r.crossModuleToUnstable,
       });
     },
   },
   {
     name: "depth",
     compute(ctx) {
-      const result = computeMaxDepth(ctx.snapshot.importGraph.adjacency);
-      return makeDimensionResult("depth", result.maxDepth, {
-        deepestPath: result.deepestPath,
+      const r = computeMaxDepth(ctx.snapshot.importGraph.adjacency);
+      return makeDimensionResult("depth", r.maxDepth, {
+        deepestPath: r.deepestPath,
       });
     },
   },
   {
     name: "godFiles",
     compute(ctx) {
-      const result = detectGodFiles(ctx.fanMaps.fanOut, ctx.entryPoints);
-      return makeDimensionResult("godFiles", result.ratio, {
-        files: result.godFiles,
-        count: result.count,
+      const r = detectGodFiles(ctx.fanMaps.fanOut, ctx.entryPoints);
+      return makeDimensionResult("godFiles", r.ratio, {
+        files: r.godFiles,
+        count: r.count,
       });
     },
   },
   {
     name: "complexFn",
     compute(ctx) {
-      const ratio = computeComplexFnRatio(ctx.allFunctions);
-      return makeDimensionResult("complexFn", ratio, {
-        totalFunctions: ctx.allFunctions.length,
-        complexCount: ctx.allFunctions.filter(
-          (fn) => fn.cc > COMPLEXITY_CC_THRESHOLD,
-        ).length,
+      const r = computeComplexFns(ctx.snapshot.files);
+      return makeDimensionResult("complexFn", r.ratio, {
+        totalFunctions: r.totalFunctions,
+        complexCount: r.complexCount,
+        complexFunctions: r.complexFunctions,
       });
     },
   },
   {
     name: "levelization",
     compute(ctx) {
-      const result = computeLevelization(
+      const r = computeLevelization(
         ctx.snapshot.importGraph.adjacency,
         ctx.cycleResult.cycles,
       );
-      return makeDimensionResult("levelization", result.violationRatio, {
-        violations: result.violations,
-        totalEdges: result.totalEdges,
+      return makeDimensionResult("levelization", r.violationRatio, {
+        violations: r.violations,
+        totalEdges: r.totalEdges,
       });
     },
   },
   {
     name: "blastRadius",
     compute(ctx) {
-      const result = computeBlastRadius(
+      const r = computeBlastRadius(
         ctx.snapshot.importGraph.reverseAdjacency,
         ctx.foundationFiles,
       );
-      return makeDimensionResult("blastRadius", result.maxBlastRadiusRatio, {
-        maxBlastRadius: result.maxBlastRadius,
+      return makeDimensionResult("blastRadius", r.maxBlastRadiusRatio, {
+        maxBlastRadius: r.maxBlastRadius,
         totalFiles: ctx.snapshot.totalFiles,
+        maxBlastRadiusFile: r.maxBlastRadiusFile,
       });
     },
   },
   {
     name: "cognitiveComplexity",
     compute(ctx) {
-      const ratio = computeCognitiveComplexityRatio(ctx.allFunctions);
-      return makeDimensionResult("cognitiveComplexity", ratio, {
-        totalFunctions: ctx.allFunctions.length,
-        complexCount: ctx.allFunctions.filter(
-          (fn) => fn.cognitiveComplexity > COGNITIVE_COMPLEXITY_THRESHOLD,
-        ).length,
+      const r = computeCognitiveComplexity(ctx.snapshot.files);
+      return makeDimensionResult("cognitiveComplexity", r.ratio, {
+        totalFunctions: r.totalFunctions,
+        complexCount: r.complexCount,
+        functions: r.functions,
       });
     },
   },
   {
     name: "hotspots",
     compute(ctx) {
-      const ratio = computeHotspotRatio(ctx.fanMaps);
-      return makeDimensionResult("hotspots", ratio);
+      const r = computeHotspotRatio(ctx.fanMaps);
+      return makeDimensionResult("hotspots", r.ratio, {
+        files: r.hotspotFiles,
+      });
     },
   },
   {
     name: "longFunctions",
     compute(ctx) {
-      const ratio = computeLongFunctionRatio(ctx.allFunctions);
-      return makeDimensionResult("longFunctions", ratio);
+      const r = computeLongFunctions(ctx.snapshot.files);
+      return makeDimensionResult("longFunctions", r.ratio, {
+        functions: r.functions,
+      });
     },
   },
   {
     name: "largeFiles",
     compute(ctx) {
-      const ratio = computeLargeFileRatio(ctx.snapshot.files);
-      return makeDimensionResult("largeFiles", ratio);
+      const r = computeLargeFiles(ctx.snapshot.files);
+      return makeDimensionResult("largeFiles", r.ratio, { files: r.files });
     },
   },
   {
     name: "highParams",
     compute(ctx) {
-      const ratio = computeHighParamsRatio(ctx.allFunctions);
-      return makeDimensionResult("highParams", ratio);
+      const r = computeHighParams(ctx.snapshot.files);
+      return makeDimensionResult("highParams", r.ratio, {
+        functions: r.functions,
+      });
     },
   },
   {
     name: "duplication",
     compute(ctx) {
-      const ratio = computeDuplicationRatio(ctx.allFunctions);
-      return makeDimensionResult("duplication", ratio);
+      const r = computeDuplication(ctx.snapshot.files);
+      return makeDimensionResult("duplication", r.ratio, { groups: r.groups });
     },
   },
   {
     name: "deadCode",
     compute(ctx) {
-      const ratio = computeDeadCodeRatio(
+      const r = computeDeadCodeRatio(
         ctx.snapshot.importGraph.reverseAdjacency,
         ctx.entryPoints,
         ctx.snapshot.files,
       );
-      return makeDimensionResult("deadCode", ratio);
+      return makeDimensionResult("deadCode", r.ratio, {
+        files: r.deadFiles,
+      });
     },
   },
   {
     name: "comments",
     compute(ctx) {
-      const rawValue = computeCommentRawValue(ctx.snapshot.files);
-      return makeDimensionResult("comments", rawValue);
+      const r = computeComments(ctx.snapshot.files);
+      return makeDimensionResult("comments", r.rawValue, {
+        commentRatio: r.commentRatio,
+      });
     },
   },
   {
     name: "cohesion",
     compute(ctx) {
-      const rawValue = computeCohesion(
+      const r = computeCohesion(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("cohesion", rawValue);
+      return makeDimensionResult("cohesion", r.rawValue, {
+        worstModule: r.worstModule,
+        worstCohesion: r.worstCohesion,
+      });
     },
   },
   {
     name: "entropy",
     compute(ctx) {
-      const rawValue = computeEntropy(
+      const r = computeEntropy(
         ctx.snapshot.importGraph.edges,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("entropy", rawValue);
+      return makeDimensionResult("entropy", r, { normalizedEntropy: r });
     },
   },
   {
     name: "distanceFromMainSeq",
     compute(ctx) {
-      const rawValue = computeDistanceFromMainSeq(
+      const r = computeDistanceFromMainSeq(
         ctx.snapshot.files,
         ctx.fanMaps,
         ctx.moduleAssignments,
       );
-      return makeDimensionResult("distanceFromMainSeq", rawValue);
+      return makeDimensionResult("distanceFromMainSeq", r.maxDistance, {
+        worstModule: r.worstModule,
+        distance: r.maxDistance,
+      });
     },
   },
   {
     name: "attackSurface",
     compute(ctx) {
-      const rawValue = computeAttackSurface(
+      const r = computeAttackSurface(
         ctx.snapshot.importGraph.adjacency,
         ctx.entryPoints,
         ctx.snapshot.totalFiles,
       );
-      return makeDimensionResult("attackSurface", rawValue);
+      return makeDimensionResult("attackSurface", r.ratio, {
+        reachableCount: r.reachableCount,
+        totalFiles: ctx.snapshot.totalFiles,
+      });
     },
   },
 ];

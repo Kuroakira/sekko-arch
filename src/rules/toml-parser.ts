@@ -6,6 +6,7 @@ import type {
   ConstraintsConfig,
   LayerConfig,
   BoundaryConfig,
+  IgnoreConfig,
 } from "../types/rules.js";
 
 function toConstraints(
@@ -40,6 +41,18 @@ function toLayerConfig(item: unknown): LayerConfig | null {
     paths: obj.paths.filter((p): p is string => typeof p === "string"),
     order: obj.order,
   } satisfies LayerConfig;
+}
+
+function toIgnoreConfig(
+  raw: Record<string, unknown>,
+): IgnoreConfig | undefined {
+  const ignore = raw["ignore"];
+  if (ignore == null || typeof ignore !== "object") return undefined;
+  const obj = ignore as Record<string, unknown>;
+  const patterns = obj["patterns"];
+  if (!Array.isArray(patterns)) return undefined;
+  const filtered = patterns.filter((p): p is string => typeof p === "string");
+  return { patterns: filtered };
 }
 
 function toBoundaryConfig(item: unknown): BoundaryConfig | null {
@@ -78,6 +91,7 @@ export function parseRulesFile(configDir: string): RulesConfig | null {
       constraints?: ConstraintsConfig;
       layers?: readonly LayerConfig[];
       boundaries?: readonly BoundaryConfig[];
+      ignore?: IgnoreConfig;
     } = {};
 
     const constraints = toConstraints(parsed);
@@ -98,6 +112,9 @@ export function parseRulesFile(configDir: string): RulesConfig | null {
         .filter((b): b is BoundaryConfig => b !== null);
       if (boundaries.length > 0) config.boundaries = boundaries;
     }
+
+    const ignore = toIgnoreConfig(parsed);
+    if (ignore) config.ignore = ignore;
 
     return config;
   } catch (error: unknown) {

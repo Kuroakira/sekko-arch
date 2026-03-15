@@ -115,4 +115,91 @@ max_cycles = 3
       rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it("returns undefined ignore when [ignore] section is absent", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `
+[constraints]
+max_cycles = 0
+`,
+      );
+
+      const result = parseRulesFile(tmpDir);
+      expect(result).not.toBeNull();
+      expect((result as RulesConfig).ignore).toBeUndefined();
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [ignore] section with string patterns", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `
+[ignore]
+patterns = ["src/generated/**", "**/*.generated.ts"]
+`,
+      );
+
+      const result = parseRulesFile(tmpDir);
+      expect(result).not.toBeNull();
+      const config = result as RulesConfig;
+      expect(config.ignore).toBeDefined();
+      expect(config.ignore?.patterns).toEqual([
+        "src/generated/**",
+        "**/*.generated.ts",
+      ]);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("parses [ignore] with empty patterns array", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `
+[ignore]
+patterns = []
+`,
+      );
+
+      const result = parseRulesFile(tmpDir);
+      expect(result).not.toBeNull();
+      const config = result as RulesConfig;
+      expect(config.ignore).toBeDefined();
+      expect(config.ignore?.patterns).toEqual([]);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("filters non-string elements from [ignore] patterns", () => {
+    const tmpDir = makeTempDir();
+    try {
+      writeRulesToml(
+        tmpDir,
+        `
+[ignore]
+patterns = ["valid-pattern", 42, "another-pattern"]
+`,
+      );
+
+      const result = parseRulesFile(tmpDir);
+      expect(result).not.toBeNull();
+      const config = result as RulesConfig;
+      expect(config.ignore?.patterns).toEqual([
+        "valid-pattern",
+        "another-pattern",
+      ]);
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });

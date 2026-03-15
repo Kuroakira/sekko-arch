@@ -17,10 +17,10 @@ describe("computeCompositeGrade", () => {
   });
 
   it("caps composite at worst + 1 even if mean is higher", () => {
-    // 18 dimensions at A (4) and 1 at F (0)
-    // mean = (18*4 + 0) / 19 = 72/19 = 3.79 => floor = 3 (B)
+    // 18 dimensions at A (value=4) and 1 at F (value=0)
+    // mean = (18*4 + 0) / 19 ≈ 3.79 → floor = 3 (B)
     // worst + 1 = 0 + 1 = 1 (D)
-    // min(3, 1) = 1 => D
+    // min(3, 1) = 1 → D
     const grades = makeAllDimensionGrades("A");
     const withOneF: DimensionGrades = {
       ...grades,
@@ -36,22 +36,16 @@ describe("computeCompositeGrade", () => {
   });
 
   it("handles mixed grades correctly", () => {
-    // 3 A (4), 2 B (3), 1 C (2), 1 D (1)
-    // mean = (12 + 6 + 2 + 1) / 7 = 21/7 = 3 => floor = 3 (B)
+    // Base: all 19 at A, then override 4 dimensions
+    // 15 A (4), 2 B (3), 1 C (2), 1 D (1)
     // worst + 1 = 1 + 1 = 2 (C)
-    // min(3, 2) = 2 => C
     const grades: DimensionGrades = {
       ...makeAllDimensionGrades("A"),
-      cycles: makeDimension("cycles", 0, "A"),
-      coupling: makeDimension("coupling", 0, "A"),
-      depth: makeDimension("depth", 0, "A"),
       godFiles: makeDimension("godFiles", 0, "B"),
       complexFn: makeDimension("complexFn", 0, "B"),
       levelization: makeDimension("levelization", 0, "C"),
       blastRadius: makeDimension("blastRadius", 0, "D"),
     };
-    // 12 A (4), 2 B (3), 1 C (2), 1 D (1) ... but composite formula uses all 19 dims
-    // We just verify it doesn't crash and returns a valid grade
     expect(computeCompositeGrade(grades)).toMatch(/^[ABCDF]$/);
   });
 
@@ -63,17 +57,14 @@ describe("computeCompositeGrade", () => {
   });
 
   it("handles a single F among mostly B grades", () => {
-    // 6 B (3), 1 F (0)
-    // mean = (18 + 0) / 7 = 18/7 = 2.57 => floor = 2 (C)
+    // 18 B (3), 1 F (0)
+    // mean = (18*3 + 0) / 19 ≈ 2.84 → floor = 2 (C)
     // worst + 1 = 0 + 1 = 1 (D)
-    // min(2, 1) = 1 => D
+    // min(2, 1) = 1 → D
     const grades: DimensionGrades = {
       ...makeAllDimensionGrades("B"),
       blastRadius: makeDimension("blastRadius", 0, "F"),
     };
-    // worst = F (0), worst + 1 = 1 (D)
-    // mean = (18*3 + 0) / 19 = 54/19 ≈ 2.84 → floor = 2 (C)
-    // min(2, 1) = 1 → D
     expect(computeCompositeGrade(grades)).toBe("D");
   });
 });

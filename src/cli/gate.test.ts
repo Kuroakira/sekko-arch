@@ -100,13 +100,9 @@ describe("saveBaseline", () => {
     expect(baseline.complexFnRatio).toBe(3);
     expect(baseline.maxDepth).toBe(5);
     expect(baseline.compositeGrade).toBe("B");
-    expect(baseline.dimensionGrades).toHaveProperty("cycles");
-    expect(baseline.dimensionGrades).toHaveProperty("coupling");
-    expect(baseline.dimensionGrades).toHaveProperty("depth");
-    expect(baseline.dimensionGrades).toHaveProperty("godFiles");
-    expect(baseline.dimensionGrades).toHaveProperty("complexFn");
-    expect(baseline.dimensionGrades).toHaveProperty("levelization");
-    expect(baseline.dimensionGrades).toHaveProperty("blastRadius");
+    for (const name of DIMENSION_NAMES) {
+      expect(baseline.dimensionGrades).toHaveProperty(name);
+    }
   });
 });
 
@@ -230,6 +226,12 @@ describe("compareBaseline", () => {
   it("throws descriptive error when baseline has wrong field types", () => {
     const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
+
+    const dimensionGrades: Record<string, string> = {};
+    for (const name of DIMENSION_NAMES) {
+      dimensionGrades[name] = "A";
+    }
+
     writeFileSync(
       join(dir, "baseline.json"),
       JSON.stringify({
@@ -239,15 +241,7 @@ describe("compareBaseline", () => {
         complexFnRatio: 0,
         maxDepth: 0,
         compositeGrade: "A",
-        dimensionGrades: {
-          cycles: "A",
-          coupling: "A",
-          depth: "A",
-          godFiles: "A",
-          complexFn: "A",
-          levelization: "A",
-          blastRadius: "A",
-        },
+        dimensionGrades,
       }),
     );
 
@@ -259,6 +253,13 @@ describe("compareBaseline", () => {
   it("throws descriptive error when dimensionGrades is missing a field", () => {
     const dir = join(tmpDir, ".sekko-arch");
     mkdirSync(dir, { recursive: true });
+
+    const dimensionGrades: Record<string, string> = {};
+    for (const name of DIMENSION_NAMES) {
+      dimensionGrades[name] = "A";
+    }
+    delete dimensionGrades["depth"];
+
     writeFileSync(
       join(dir, "baseline.json"),
       JSON.stringify({
@@ -268,15 +269,7 @@ describe("compareBaseline", () => {
         complexFnRatio: 0,
         maxDepth: 3,
         compositeGrade: "A",
-        dimensionGrades: {
-          cycles: "A",
-          coupling: "A",
-          // depth missing
-          godFiles: "A",
-          complexFn: "A",
-          levelization: "A",
-          blastRadius: "A",
-        },
+        dimensionGrades,
       }),
     );
 

@@ -1,6 +1,6 @@
 import type { LayerConfig, RuleViolation } from "../types/rules.js";
 import type { ImportEdge } from "../types/snapshot.js";
-import { globMatch } from "../utils/glob.js";
+import { globMatch } from "./glob.js";
 
 function findLayer(
   layers: readonly LayerConfig[],

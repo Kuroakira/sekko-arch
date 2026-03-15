@@ -32,8 +32,13 @@ export interface BoundaryConfig {
   readonly reason?: string;
 }
 
+export interface IgnoreConfig {
+  readonly patterns: readonly string[];
+}
+
 export interface RulesConfig {
   readonly constraints?: ConstraintsConfig;
   readonly layers?: readonly LayerConfig[];
   readonly boundaries?: readonly BoundaryConfig[];
+  readonly ignore?: IgnoreConfig;
 }
