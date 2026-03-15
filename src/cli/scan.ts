@@ -71,7 +71,7 @@ export function executePipeline(
     rulesConfig?.evolution,
   );
 
-  const health = computeHealth(snapshot, gitHistory);
+  const health = computeHealth(snapshot, gitHistory, rulesConfig?.evolution);
   return { snapshot, health };
 }
 

@@ -6,6 +6,7 @@ import type {
   HealthReport,
 } from "../types/metrics.js";
 import type { GitHistory } from "../git/types.js";
+import type { EvolutionConfig } from "../types/rules.js";
 import { computeCompositeGrade } from "../grading/grade.js";
 import { buildMetricContext } from "./context.js";
 import { METRIC_COMPUTATIONS } from "./registry.js";
@@ -13,10 +14,11 @@ import { METRIC_COMPUTATIONS } from "./registry.js";
 export function computeHealth(
   snapshot: Snapshot,
   gitHistory?: GitHistory,
+  evolutionConfig?: EvolutionConfig,
 ): HealthReport {
   const startTime = performance.now();
 
-  const ctx = buildMetricContext(snapshot, gitHistory);
+  const ctx = buildMetricContext(snapshot, gitHistory, evolutionConfig);
 
   const dimensions = {} as Record<DimensionName, DimensionResult>;
   for (const metric of METRIC_COMPUTATIONS) {
