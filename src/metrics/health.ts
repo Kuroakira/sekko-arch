@@ -5,14 +5,18 @@ import type {
   DimensionResult,
   HealthReport,
 } from "../types/metrics.js";
+import type { GitHistory } from "../git/types.js";
 import { computeCompositeGrade } from "../grading/grade.js";
 import { buildMetricContext } from "./context.js";
 import { METRIC_COMPUTATIONS } from "./registry.js";
 
-export function computeHealth(snapshot: Snapshot): HealthReport {
+export function computeHealth(
+  snapshot: Snapshot,
+  gitHistory?: GitHistory,
+): HealthReport {
   const startTime = performance.now();
 
-  const ctx = buildMetricContext(snapshot);
+  const ctx = buildMetricContext(snapshot, gitHistory);
 
   const dimensions = {} as Record<DimensionName, DimensionResult>;
   for (const metric of METRIC_COMPUTATIONS) {

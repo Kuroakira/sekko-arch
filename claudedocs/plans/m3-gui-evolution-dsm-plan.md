@@ -12,8 +12,8 @@ M2のregistryパターン、MetricContext、DIMENSION_REGISTRY一元管理が完
 
 | Group | Name | Tasks | Description | Status |
 |-------|------|-------|-------------|--------|
-| A | 型システム・基盤拡張 | T01-T05 | DimensionName 24メンバー化, categoryフィールド追加, EvolutionConfig, GitHistory型, テストヘルパー24次元対応 | pending |
-| B | Git履歴モジュール | T06-T08 | `src/git/` — 型定義, git log収集・解析, パイプライン前段統合 | pending |
+| A | 型システム・基盤拡張 | T01-T05 | DimensionName 24メンバー化, categoryフィールド追加, EvolutionConfig, GitHistory型, テストヘルパー24次元対応 | **done** (ab22716, 2026-03-15) |
+| B | Git履歴モジュール | T06-T08 | `src/git/` — 型定義, git log収集・解析, パイプライン前段統合 | **done** (2026-03-15) |
 | C | 進化メトリクス | T09-T12 | 4メトリクス: codeChurn, changeCoupling, busFactor, codeAge | pending |
 | D | テストカバレッジギャップ | T13-T14 | テストファイル収集, import解析, 到達可能性計算 | pending |
 | E | レジストリ統合・既存テスト更新 | T15-T17 | registry.ts 24次元統合, 既存テスト24次元対応, E2E更新 | pending |
@@ -71,7 +71,7 @@ A (型・基盤) → B (Git履歴モジュール) → C (進化メトリクス)
 
 ### Group A: 型システム・基盤拡張
 
-#### T01: DimensionName union拡張（24メンバー化）
+#### [DONE] T01: DimensionName union拡張（24メンバー化）(completed 2026-03-15)
 
 - **Description**: `DimensionName`に5つの新メンバーを追加。DimensionGradesはmapped typeなので自動拡張される。
 - **Files**: `src/types/metrics.ts`
@@ -80,7 +80,7 @@ A (型・基盤) → B (Git履歴モジュール) → C (進化メトリクス)
 - **Acceptance**: `DimensionName`が24メンバー。コンパイル通過（後続タスクでDIMENSION_REGISTRYとMETRIC_COMPUTATIONSを追加するまでランタイムエラーの可能性）
 - **新DimensionNameメンバー**: `"codeChurn"`, `"changeCoupling"`, `"busFactor"`, `"codeAge"`, `"testCoverageGap"`
 
-#### T02: DIMENSION_REGISTRY拡張 + categoryフィールド追加
+#### [DONE] T02: DIMENSION_REGISTRY拡張 + categoryフィールド追加 (completed 2026-03-15)
 
 - **Description**: `DimensionConfig`にcategoryフィールドを追加し、全24エントリにcategoryを設定。5つの新DimensionConfigエントリをDesign Docの閾値テーブルに基づき追加。
 - **Files**: `src/dimensions.ts`
@@ -103,7 +103,7 @@ codeAge:            [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinity, "F"]
 ```
 
-#### T03: EvolutionConfig型 + rules.tomlパーサー拡張
+#### [DONE] T03: EvolutionConfig型 + rules.tomlパーサー拡張 (completed 2026-03-15)
 
 - **Description**: `RulesConfig`に`EvolutionConfig`を追加し、`parseRulesFile()`で`[evolution]`セクションをパースする。
 - **Files**: `src/types/rules.ts`, `src/rules/toml-parser.ts`
@@ -128,7 +128,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - 不正な型: 無視（デフォルト値使用）
 - **Acceptance**: `parseRulesFile()`が`[evolution]`セクションを正しくパースして`RulesConfig.evolution`に格納
 
-#### T04: GitHistory型定義
+#### [DONE] T04: GitHistory型定義 (completed 2026-03-15)
 
 - **Description**: `src/git/types.ts`にGitHistory関連の型を定義する。
 - **Files**: `src/git/types.ts`（新規作成）
@@ -157,7 +157,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   }
   ```
 
-#### T05: テストヘルパー24次元対応
+#### [DONE] T05: テストヘルパー24次元対応 (completed 2026-03-15)
 
 - **Description**: `src/testing/fixtures.ts`の`DEFAULT_RAW_VALUES`、`makeAllDimensionGrades()`、`makeHealth()`を24次元に拡張。5つの新次元のデフォルト値を追加。
 - **Files**: `src/testing/fixtures.ts`
@@ -165,17 +165,20 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: `src/testing/fixtures.test.ts`（既存テスト更新）— 24次元のDimensionGrades生成確認
 - **Acceptance**: テストヘルパーが24次元に対応。既存テストのFuncInfo/DimensionGradesリテラルがコンパイル通過。
 
-#### Group A 実装メモ
+#### Group A 実装メモ (実装済み)
 
-- T01のDimensionName拡張でDIMENSION_REGISTRYとMETRIC_COMPUTATIONSのランタイム長さチェックが失敗する。T02で5つのstubComputation（rawValue=0, grade="A"を返す）をMETRIC_COMPUTATIONSに追加し、Group C/D/Eで実装に置換
-- T02のcategoryフィールド追加は既存19エントリ全ての変更を伴うが、TypeScriptコンパイラが漏れを検出するため安全に実行可能
-- T03とT04は他タスクと独立しており並列実装可能
+- T01+T02をセットで実装（METRIC_COMPUTATIONSのランタイム長さチェック対策）。5つのstub computation（rawValue=0, details付き）を追加
+- T02のcategoryフィールド追加に伴い、DIMENSION_REGISTRYの配列順序をカテゴリ別にソート済みに変更
+- T05のfixtures.ts更新と同時に、既存テストの19→24次元アサーション更新を実施
+- `src/cli/index.test.ts`の`gate --save defaults to false`テスト：baseline.json依存の脆弱なテストをoption解析のみに修正
+- CLIバージョンを0.1.0→0.2.0に更新
+- 602テスト全パス（元579 + 新23）
 
 ---
 
 ### Group B: Git履歴モジュール
 
-#### T06: Git log収集・解析
+#### [DONE] T06: Git log収集・解析 (completed 2026-03-15)
 
 - **Description**: `src/git/collector.ts`に`collectGitHistory(rootDir, options?)`関数を実装。`execSync`で`git log --format`を実行し、カスタムフォーマット出力を解析してGitHistory型に変換する。
 - **Files**: `src/git/collector.ts`（新規作成）
@@ -196,7 +199,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
   - numstat出力の解析（バイナリファイル、リネームファイルの除外）
 - **Acceptance**: gitリポジトリで`collectGitHistory()`が正しいGitHistoryを返す。git不在環境でundefined。
 
-#### T07: Git モジュールバレル
+#### [DONE] T07: Git モジュールバレル (completed 2026-03-15)
 
 - **Description**: `src/git/index.ts`にバレルファイルを作成。
 - **Files**: `src/git/index.ts`（新規作成）
@@ -204,7 +207,7 @@ testCoverageGap:    [0.10, "A"], [0.20, "B"], [0.35, "C"], [0.50, "D"], [Infinit
 - **Tests**: なし（re-exportのみ）
 - **Acceptance**: `import { collectGitHistory, GitHistory } from "../git/index.js"`が解決可能
 
-#### T08: MetricContext拡張 + パイプライン前段統合
+#### [DONE] T08: MetricContext拡張 + パイプライン前段統合 (completed 2026-03-15)
 
 - **Description**: MetricContextに`gitHistory?: GitHistory`をオプショナルフィールドとして追加。`buildMetricContext()`にオプショナルパラメータとして`GitHistory`を受け取る。`computeHealth()`のシグネチャを拡張して`GitHistory`を受け取り、`buildMetricContext()`に渡す。`executePipeline()`の前段でgitデータを収集しパイプラインに注入。
 - **Files**: `src/metrics/context.ts`, `src/metrics/health.ts`, `src/cli/scan.ts`

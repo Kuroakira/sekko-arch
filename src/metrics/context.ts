@@ -1,5 +1,6 @@
 import type { Snapshot } from "../types/snapshot.js";
 import type { FuncInfo } from "../types/core.js";
+import type { GitHistory } from "../git/types.js";
 import { computeFanMaps } from "./fan-maps.js";
 import type { FanMaps } from "./fan-maps.js";
 import { computeModuleAssignments } from "./module-boundary.js";
@@ -54,9 +55,13 @@ export interface MetricContext {
   readonly foundationFiles: ReadonlySet<string>;
   readonly allFunctions: readonly FuncInfo[];
   readonly cycleResult: CycleResult;
+  readonly gitHistory?: GitHistory;
 }
 
-export function buildMetricContext(snapshot: Snapshot): MetricContext {
+export function buildMetricContext(
+  snapshot: Snapshot,
+  gitHistory?: GitHistory,
+): MetricContext {
   const { importGraph, files } = snapshot;
   const filePaths = files.map((f) => f.path);
 
@@ -80,5 +85,6 @@ export function buildMetricContext(snapshot: Snapshot): MetricContext {
     foundationFiles,
     allFunctions,
     cycleResult,
+    gitHistory,
   };
 }
