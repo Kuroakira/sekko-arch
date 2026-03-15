@@ -75,6 +75,190 @@ function sanitizeJson(json: string): string {
   return json.replace(/<\/script/gi, "<\\/script");
 }
 
+function generateTreemapScript(): string {
+  return `  // Treemap
+  (function renderTreemap() {
+    var container = document.getElementById('treemap');
+    var width = container.clientWidth || window.innerWidth;
+    var height = container.clientHeight || (window.innerHeight - 110);
+
+    var root = { name: 'root', children: [] };
+    var dirMap = {};
+    data.treemapFiles.forEach(function(f) {
+      var parts = f.path.split('/');
+      var current = root;
+      for (var i = 0; i < parts.length - 1; i++) {
+        var dirName = parts[i];
+        if (!current._childMap) current._childMap = {};
+        if (!current._childMap[dirName]) {
+          var child = { name: dirName, children: [], _childMap: {} };
+          current.children.push(child);
+          current._childMap[dirName] = child;
+        }
+        current = current._childMap[dirName];
+      }
+      current.children.push({ name: parts[parts.length - 1], value: f.lines, grade: f.grade, path: f.path });
+    });
+
+    var hierarchy = d3.hierarchy(root).sum(function(d) { return d.value || 0; });
+    d3.treemap().size([width, height]).padding(1)(hierarchy);
+
+    var svg = d3.select('#treemap').append('svg').attr('width', width).attr('height', height);
+    var leaves = hierarchy.leaves();
+
+    svg.selectAll('rect')
+      .data(leaves)
+      .enter().append('rect')
+      .attr('class', 'treemap-cell')
+      .attr('x', function(d) { return d.x0; })
+      .attr('y', function(d) { return d.y0; })
+      .attr('width', function(d) { return d.x1 - d.x0; })
+      .attr('height', function(d) { return d.y1 - d.y0; })
+      .attr('fill', function(d) { return colors[d.data.grade] || '#64748b'; })
+      .on('mouseover', function(evt, d) {
+        showTooltip(evt, '<strong>' + d.data.path + '</strong><br>' + d.data.value + ' lines / Grade ' + d.data.grade);
+      })
+      .on('mousemove', function(evt) {
+        tooltip.style.left = (evt.pageX + 12) + 'px';
+        tooltip.style.top = (evt.pageY - 12) + 'px';
+      })
+      .on('mouseout', hideTooltip);
+
+    svg.selectAll('text')
+      .data(leaves.filter(function(d) { return (d.x1 - d.x0) > 40 && (d.y1 - d.y0) > 14; }))
+      .enter().append('text')
+      .attr('class', 'treemap-label')
+      .attr('x', function(d) { return d.x0 + 3; })
+      .attr('y', function(d) { return d.y0 + 12; })
+      .text(function(d) { return d.data.name; });
+  })();`;
+}
+
+function generateDsmScript(): string {
+  return `  // DSM
+  function renderDsm() {
+    var dsm = data.dsmData;
+    var modules = dsm.modules;
+    var n = modules.length;
+    if (n === 0) { document.getElementById('dsm').innerHTML = '<p style="color:#94a3b8;padding:24px">No module dependencies found.</p>'; return; }
+
+    var matrix = [];
+    for (var i = 0; i < n; i++) { matrix[i] = []; for (var j = 0; j < n; j++) { matrix[i][j] = 0; } }
+    var maxCount = 0;
+    dsm.cells.forEach(function(c) {
+      var fi = modules.indexOf(c.from);
+      var ti = modules.indexOf(c.to);
+      if (fi >= 0 && ti >= 0) { matrix[fi][ti] = c.count; if (c.count > maxCount) maxCount = c.count; }
+    });
+
+    var cellSize = 40;
+    var labelWidth = Math.min(180, Math.max.apply(null, modules.map(function(m) { return m.length * 7; })) + 10);
+    var svgW = labelWidth + n * cellSize + 20;
+    var svgH = labelWidth + n * cellSize + 20;
+
+    var svg = d3.select('#dsm').append('svg').attr('width', svgW).attr('height', svgH);
+    var g = svg.append('g').attr('transform', 'translate(' + labelWidth + ',' + labelWidth + ')');
+
+    // Row labels
+    svg.selectAll('.row-label')
+      .data(modules)
+      .enter().append('text')
+      .attr('x', labelWidth - 4)
+      .attr('y', function(d, i) { return labelWidth + i * cellSize + cellSize / 2 + 4; })
+      .attr('text-anchor', 'end')
+      .attr('font-size', '11px')
+      .attr('fill', '#94a3b8')
+      .text(function(d) { return d; });
+
+    // Column labels
+    svg.selectAll('.col-label')
+      .data(modules)
+      .enter().append('text')
+      .attr('transform', function(d, i) { return 'translate(' + (labelWidth + i * cellSize + cellSize / 2) + ',' + (labelWidth - 4) + ') rotate(-45)'; })
+      .attr('text-anchor', 'start')
+      .attr('font-size', '11px')
+      .attr('fill', '#94a3b8')
+      .text(function(d) { return d; });
+
+    // Cells
+    var colorScale = d3.scaleLinear().domain([0, maxCount || 1]).range(['#1e293b', '#3b82f6']);
+    var violationColor = d3.scaleLinear().domain([0, maxCount || 1]).range(['#1e293b', '#ef4444']);
+
+    for (var ri = 0; ri < n; ri++) {
+      for (var ci = 0; ci < n; ci++) {
+        var val = matrix[ri][ci];
+        var isViolation = ri > ci;
+        g.append('rect')
+          .attr('x', ci * cellSize)
+          .attr('y', ri * cellSize)
+          .attr('width', cellSize - 1)
+          .attr('height', cellSize - 1)
+          .attr('fill', ri === ci ? '#334155' : (val > 0 ? (isViolation ? violationColor(val) : colorScale(val)) : '#1e293b'))
+          .attr('rx', 2)
+          .on('mouseover', (function(r, c, v) {
+            return function(evt) {
+              if (v > 0) showTooltip(evt, modules[r] + ' \u2192 ' + modules[c] + ': ' + v + ' edge(s)');
+            };
+          })(ri, ci, val))
+          .on('mousemove', function(evt) {
+            tooltip.style.left = (evt.pageX + 12) + 'px';
+            tooltip.style.top = (evt.pageY - 12) + 'px';
+          })
+          .on('mouseout', hideTooltip);
+
+        if (val > 0 && ri !== ci) {
+          g.append('text')
+            .attr('x', ci * cellSize + cellSize / 2)
+            .attr('y', ri * cellSize + cellSize / 2 + 4)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '11px')
+            .attr('fill', '#e2e8f0')
+            .text(val);
+        }
+      }
+    }
+  }`;
+}
+
+function generateAppScript(): string {
+  return `(function() {
+  var data = window.__SEKKO_DATA__;
+  var colors = data.gradeColors;
+
+  // Header
+  var badge = document.getElementById('grade-badge');
+  badge.textContent = data.compositeGrade;
+  badge.style.background = colors[data.compositeGrade];
+  document.getElementById('stats').textContent = data.fileCount + ' files / ' + data.totalLines + ' lines';
+
+  // Tabs
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('active');
+      if (tab.dataset.view === 'dsm' && !window.__dsmRendered) { renderDsm(); window.__dsmRendered = true; }
+    });
+  });
+
+  // Tooltip
+  var tooltip = document.getElementById('tooltip');
+  function showTooltip(evt, html) {
+    tooltip.innerHTML = html;
+    tooltip.style.left = (evt.pageX + 12) + 'px';
+    tooltip.style.top = (evt.pageY - 12) + 'px';
+    tooltip.style.opacity = 1;
+  }
+  function hideTooltip() { tooltip.style.opacity = 0; }
+
+${generateTreemapScript()}
+
+${generateDsmScript()}
+})();`;
+}
+
 export function generateReportHtml(result: PipelineResult): string {
   const treemapFiles = buildTreemapData(result);
   const dsmData = buildDsmData(
@@ -141,179 +325,7 @@ export function generateReportHtml(result: PipelineResult): string {
 </div>
 <div class="tooltip" id="tooltip"></div>
 <script>
-(function() {
-  var data = window.__SEKKO_DATA__;
-  var colors = data.gradeColors;
-
-  // Header
-  var badge = document.getElementById('grade-badge');
-  badge.textContent = data.compositeGrade;
-  badge.style.background = colors[data.compositeGrade];
-  document.getElementById('stats').textContent = data.fileCount + ' files / ' + data.totalLines + ' lines';
-
-  // Tabs
-  var tabs = document.querySelectorAll('.tab');
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      tabs.forEach(function(t) { t.classList.remove('active'); });
-      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
-      tab.classList.add('active');
-      document.getElementById('view-' + tab.dataset.view).classList.add('active');
-      if (tab.dataset.view === 'dsm' && !window.__dsmRendered) { renderDsm(); window.__dsmRendered = true; }
-    });
-  });
-
-  // Tooltip
-  var tooltip = document.getElementById('tooltip');
-  function showTooltip(evt, html) {
-    tooltip.innerHTML = html;
-    tooltip.style.left = (evt.pageX + 12) + 'px';
-    tooltip.style.top = (evt.pageY - 12) + 'px';
-    tooltip.style.opacity = 1;
-  }
-  function hideTooltip() { tooltip.style.opacity = 0; }
-
-  // Treemap
-  (function renderTreemap() {
-    var container = document.getElementById('treemap');
-    var width = container.clientWidth || window.innerWidth;
-    var height = container.clientHeight || (window.innerHeight - 110);
-
-    var root = { name: 'root', children: [] };
-    var dirMap = {};
-    data.treemapFiles.forEach(function(f) {
-      var parts = f.path.split('/');
-      var current = root;
-      for (var i = 0; i < parts.length - 1; i++) {
-        var dirName = parts[i];
-        if (!current._childMap) current._childMap = {};
-        if (!current._childMap[dirName]) {
-          var child = { name: dirName, children: [], _childMap: {} };
-          current.children.push(child);
-          current._childMap[dirName] = child;
-        }
-        current = current._childMap[dirName];
-      }
-      current.children.push({ name: parts[parts.length - 1], value: f.lines, grade: f.grade, path: f.path });
-    });
-
-    var hierarchy = d3.hierarchy(root).sum(function(d) { return d.value || 0; });
-    d3.treemap().size([width, height]).padding(1)(hierarchy);
-
-    var svg = d3.select('#treemap').append('svg').attr('width', width).attr('height', height);
-    var leaves = hierarchy.leaves();
-
-    svg.selectAll('rect')
-      .data(leaves)
-      .enter().append('rect')
-      .attr('class', 'treemap-cell')
-      .attr('x', function(d) { return d.x0; })
-      .attr('y', function(d) { return d.y0; })
-      .attr('width', function(d) { return d.x1 - d.x0; })
-      .attr('height', function(d) { return d.y1 - d.y0; })
-      .attr('fill', function(d) { return colors[d.data.grade] || '#64748b'; })
-      .on('mouseover', function(evt, d) {
-        showTooltip(evt, '<strong>' + d.data.path + '</strong><br>' + d.data.value + ' lines / Grade ' + d.data.grade);
-      })
-      .on('mousemove', function(evt) {
-        tooltip.style.left = (evt.pageX + 12) + 'px';
-        tooltip.style.top = (evt.pageY - 12) + 'px';
-      })
-      .on('mouseout', hideTooltip);
-
-    svg.selectAll('text')
-      .data(leaves.filter(function(d) { return (d.x1 - d.x0) > 40 && (d.y1 - d.y0) > 14; }))
-      .enter().append('text')
-      .attr('class', 'treemap-label')
-      .attr('x', function(d) { return d.x0 + 3; })
-      .attr('y', function(d) { return d.y0 + 12; })
-      .text(function(d) { return d.data.name; });
-  })();
-
-  // DSM
-  function renderDsm() {
-    var dsm = data.dsmData;
-    var modules = dsm.modules;
-    var n = modules.length;
-    if (n === 0) { document.getElementById('dsm').innerHTML = '<p style="color:#94a3b8;padding:24px">No module dependencies found.</p>'; return; }
-
-    var matrix = [];
-    for (var i = 0; i < n; i++) { matrix[i] = []; for (var j = 0; j < n; j++) { matrix[i][j] = 0; } }
-    var maxCount = 0;
-    dsm.cells.forEach(function(c) {
-      var fi = modules.indexOf(c.from);
-      var ti = modules.indexOf(c.to);
-      if (fi >= 0 && ti >= 0) { matrix[fi][ti] = c.count; if (c.count > maxCount) maxCount = c.count; }
-    });
-
-    var cellSize = 40;
-    var labelWidth = Math.min(180, Math.max.apply(null, modules.map(function(m) { return m.length * 7; })) + 10);
-    var svgW = labelWidth + n * cellSize + 20;
-    var svgH = labelWidth + n * cellSize + 20;
-
-    var svg = d3.select('#dsm').append('svg').attr('width', svgW).attr('height', svgH);
-    var g = svg.append('g').attr('transform', 'translate(' + labelWidth + ',' + labelWidth + ')');
-
-    // Row labels
-    svg.selectAll('.row-label')
-      .data(modules)
-      .enter().append('text')
-      .attr('x', labelWidth - 4)
-      .attr('y', function(d, i) { return labelWidth + i * cellSize + cellSize / 2 + 4; })
-      .attr('text-anchor', 'end')
-      .attr('font-size', '11px')
-      .attr('fill', '#94a3b8')
-      .text(function(d) { return d; });
-
-    // Column labels
-    svg.selectAll('.col-label')
-      .data(modules)
-      .enter().append('text')
-      .attr('transform', function(d, i) { return 'translate(' + (labelWidth + i * cellSize + cellSize / 2) + ',' + (labelWidth - 4) + ') rotate(-45)'; })
-      .attr('text-anchor', 'start')
-      .attr('font-size', '11px')
-      .attr('fill', '#94a3b8')
-      .text(function(d) { return d; });
-
-    // Cells
-    var colorScale = d3.scaleLinear().domain([0, maxCount || 1]).range(['#1e293b', '#3b82f6']);
-    var violationColor = d3.scaleLinear().domain([0, maxCount || 1]).range(['#1e293b', '#ef4444']);
-
-    for (var ri = 0; ri < n; ri++) {
-      for (var ci = 0; ci < n; ci++) {
-        var val = matrix[ri][ci];
-        var isViolation = ri > ci;
-        g.append('rect')
-          .attr('x', ci * cellSize)
-          .attr('y', ri * cellSize)
-          .attr('width', cellSize - 1)
-          .attr('height', cellSize - 1)
-          .attr('fill', ri === ci ? '#334155' : (val > 0 ? (isViolation ? violationColor(val) : colorScale(val)) : '#1e293b'))
-          .attr('rx', 2)
-          .on('mouseover', (function(r, c, v) {
-            return function(evt) {
-              if (v > 0) showTooltip(evt, modules[r] + ' → ' + modules[c] + ': ' + v + ' edge(s)');
-            };
-          })(ri, ci, val))
-          .on('mousemove', function(evt) {
-            tooltip.style.left = (evt.pageX + 12) + 'px';
-            tooltip.style.top = (evt.pageY - 12) + 'px';
-          })
-          .on('mouseout', hideTooltip);
-
-        if (val > 0 && ri !== ci) {
-          g.append('text')
-            .attr('x', ci * cellSize + cellSize / 2)
-            .attr('y', ri * cellSize + cellSize / 2 + 4)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '11px')
-            .attr('fill', '#e2e8f0')
-            .text(val);
-        }
-      }
-    }
-  }
-})();
+${generateAppScript()}
 </script>
 </body>
 </html>`;

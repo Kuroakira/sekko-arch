@@ -1,5 +1,5 @@
 import type { FileNode, FuncInfo } from "../types/core.js";
-import { HIGH_PARAMS_THRESHOLD } from "./thresholds.js";
+import { HIGH_PARAMS_THRESHOLD } from "./detection-thresholds.js";
 
 export interface HighParamsResult {
   readonly ratio: number;

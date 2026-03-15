@@ -1,5 +1,5 @@
 import type { FanMaps } from "./fan-maps.js";
-import { HOTSPOT_SCORE_THRESHOLD } from "./thresholds.js";
+import { HOTSPOT_SCORE_THRESHOLD } from "./detection-thresholds.js";
 
 export interface HotspotFile {
   readonly file: string;

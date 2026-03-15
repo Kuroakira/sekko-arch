@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { gradeDimension, gradeToValue, valueToGrade } from "./thresholds.js";
+import { gradeDimension, gradeToValue, valueToGrade } from "../dimensions.js";
 
 describe("gradeToValue", () => {
   it("maps each grade to its numeric value", () => {

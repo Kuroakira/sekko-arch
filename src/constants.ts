@@ -10,4 +10,4 @@ export {
   LARGE_FILE_LINE_THRESHOLD,
   HIGH_PARAMS_THRESHOLD,
   HOTSPOT_SCORE_THRESHOLD,
-} from "./metrics/thresholds.js";
+} from "./metrics/detection-thresholds.js";

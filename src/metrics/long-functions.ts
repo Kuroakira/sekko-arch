@@ -1,5 +1,5 @@
 import type { FileNode, FuncInfo } from "../types/core.js";
-import { LONG_FUNCTION_LINE_THRESHOLD } from "./thresholds.js";
+import { LONG_FUNCTION_LINE_THRESHOLD } from "./detection-thresholds.js";
 
 export interface LongFunctionResult {
   readonly ratio: number;
