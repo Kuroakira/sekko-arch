@@ -218,6 +218,10 @@ npm run lint      # ESLint
 npm run format    # Prettier
 ```
 
+## Acknowledgments
+
+本プロジェクトは [sentrux](https://github.com/morinokami/sentrux) を参考に開発されました。
+
 ## ライセンス
 
 MIT

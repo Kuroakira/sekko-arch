@@ -1,6 +1,6 @@
 import type { PipelineResult } from "./scan.js";
 import type { ImportEdge } from "../types/snapshot.js";
-import type { Grade } from "../types/metrics.js";
+import type { DimensionName, DimensionResult, Grade } from "../types/metrics.js";
 import { moduleOf } from "../metrics/module-boundary.js";
 
 const GRADE_COLORS: Record<Grade, string> = {
@@ -35,11 +35,169 @@ interface ReportData {
   readonly totalLines: number;
 }
 
+/**
+ * Dimensions that flag individual files via `details.files` as `string[]`.
+ */
+const STRING_FILES_DIMENSIONS: readonly DimensionName[] = [
+  "godFiles",
+  "deadCode",
+  "testCoverageGap",
+];
+
+/**
+ * Dimensions that flag individual files via `details.files` as `{file: string, ...}[]`.
+ */
+const OBJECT_FILES_DIMENSIONS: readonly DimensionName[] = [
+  "largeFiles",
+  "codeChurn",
+  "busFactor",
+  "codeAge",
+  "hotspots",
+];
+
+/**
+ * Dimensions that flag files via function-level arrays with a `file` property.
+ * Key is dimension name, value is the property name in details.
+ */
+const FUNCTION_DIMENSIONS: ReadonlyMap<DimensionName, string> = new Map([
+  ["complexFn", "complexFunctions"],
+  ["longFunctions", "functions"],
+  ["highParams", "functions"],
+  ["cognitiveComplexity", "functions"],
+]);
+
+function getStringProp(obj: Record<string, unknown>, key: string): string | undefined {
+  const value = obj[key];
+  if (typeof value === "string") return value;
+  return undefined;
+}
+
+function getArrayProp(obj: Record<string, unknown>, key: string): readonly unknown[] | undefined {
+  const value = obj[key];
+  if (Array.isArray(value)) return value;
+  return undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function collectFilePropsFromArray(
+  arr: readonly unknown[],
+  output: Set<string>,
+): void {
+  for (const entry of arr) {
+    if (isRecord(entry)) {
+      const filePath = getStringProp(entry, "file");
+      if (filePath !== undefined) {
+        output.add(filePath);
+      }
+    }
+  }
+}
+
+function extractFilesFromDimension(dim: DimensionResult): ReadonlySet<string> {
+  const files = new Set<string>();
+  const details = dim.details;
+  if (!details) return files;
+
+  if (STRING_FILES_DIMENSIONS.includes(dim.name)) {
+    const fileList = getArrayProp(details, "files");
+    if (fileList) {
+      for (const f of fileList) {
+        if (typeof f === "string") {
+          files.add(f);
+        }
+      }
+    }
+    return files;
+  }
+
+  if (OBJECT_FILES_DIMENSIONS.includes(dim.name)) {
+    const fileList = getArrayProp(details, "files");
+    if (fileList) {
+      collectFilePropsFromArray(fileList, files);
+    }
+    return files;
+  }
+
+  const funcProp = FUNCTION_DIMENSIONS.get(dim.name);
+  if (funcProp !== undefined) {
+    const funcList = getArrayProp(details, funcProp);
+    if (funcList) {
+      collectFilePropsFromArray(funcList, files);
+    }
+    return files;
+  }
+
+  if (dim.name === "duplication") {
+    const groups = getArrayProp(details, "groups");
+    if (groups) {
+      for (const group of groups) {
+        if (isRecord(group)) {
+          const fns = getArrayProp(group, "functions");
+          if (fns) {
+            collectFilePropsFromArray(fns, files);
+          }
+        }
+      }
+    }
+    return files;
+  }
+
+  if (dim.name === "changeCoupling") {
+    const pairs = getArrayProp(details, "pairs");
+    if (pairs) {
+      for (const pair of pairs) {
+        if (isRecord(pair)) {
+          const fileA = getStringProp(pair, "fileA");
+          const fileB = getStringProp(pair, "fileB");
+          if (fileA !== undefined) files.add(fileA);
+          if (fileB !== undefined) files.add(fileB);
+        }
+      }
+    }
+    return files;
+  }
+
+  return files;
+}
+
+function flagCountToGrade(count: number): Grade {
+  if (count === 0) return "A";
+  if (count === 1) return "B";
+  if (count <= 3) return "C";
+  if (count <= 5) return "D";
+  return "F";
+}
+
+export function computePerFileGrades(result: PipelineResult): ReadonlyMap<string, Grade> {
+  const flagCounts = new Map<string, number>();
+
+  const dimensions = result.health.dimensions;
+  for (const dimName of Object.keys(dimensions)) {
+    const dim = dimensions[dimName as DimensionName];
+    const flaggedFiles = extractFilesFromDimension(dim);
+    for (const filePath of flaggedFiles) {
+      flagCounts.set(filePath, (flagCounts.get(filePath) ?? 0) + 1);
+    }
+  }
+
+  const grades = new Map<string, Grade>();
+  for (const file of result.snapshot.files) {
+    const count = flagCounts.get(file.path) ?? 0;
+    grades.set(file.path, flagCountToGrade(count));
+  }
+
+  return grades;
+}
+
 function buildTreemapData(result: PipelineResult): readonly TreemapFileData[] {
+  const perFileGrades = computePerFileGrades(result);
   return result.snapshot.files.map((file) => ({
     path: file.path,
     lines: file.lines,
-    grade: result.health.compositeGrade,
+    grade: perFileGrades.get(file.path) ?? result.health.compositeGrade,
   }));
 }
 
